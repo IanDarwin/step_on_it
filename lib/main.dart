@@ -12,19 +12,20 @@ import 'package:step_on_it/nav_drawer.dart';
 late SharedPreferences prefs;
 late String version;
 late int buildNumber;
+const default_goal = 10000;
+int goal = 0;
 double percentage = 0;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   prefs = await SharedPreferences.getInstance();
+  goal = prefs.getInt(Constants.KEY_GOAL_SETTING, default_goal);
   PackageInfo packageInfo = await PackageInfo.fromPlatform();
   version = packageInfo.version;
   buildNumber = int.parse(packageInfo.buildNumber);
   await Settings.init();
   runApp(const MyApp());
 }
-
-int goal = 5000;
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -74,7 +75,7 @@ class _StepCounterPageState extends State<StepCounterPage> {
       _totalSteps = event.steps;
       _stepsToday = _totalSteps - _stepsAtMidnight;
       percentage = _stepsToday*100.0 / goal;
-      if (percentage > 0)
+      if (percentage > 100)
         percentage = 100;
     });
     _saveData();

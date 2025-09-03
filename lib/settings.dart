@@ -45,7 +45,7 @@ class SettingsState extends State<SettingsPage> {
                     }
                     return "Daily steps goal must be numeric digits.";
                   },
-                  errorColor: Colors.redAccent,
+                  :rrorColor: Colors.redAccent,
                 ),
               ]),
           SettingsGroup(
