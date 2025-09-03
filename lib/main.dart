@@ -158,16 +158,8 @@ class _StepCounterPageState extends State<StepCounterPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            // const Text(
-            //   'Daily Steps:',
-            //   style: TextStyle(fontSize: 30),
-            // ),
-            // Text(
-            //   '$_stepsToday',
-            //   style: const TextStyle(fontSize: 60, fontWeight: FontWeight.bold),
-            // ),
             MaterialChartHollowSemiCircle(
-              percentage: _stepsToday*1.0 / goal,
+              percentage: _stepsToday*100.0 / goal,
               size: 280,
               hollowRadius: 0.65,
               style: ChartStyle(
