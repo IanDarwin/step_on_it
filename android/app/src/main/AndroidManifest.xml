@@ -4,7 +4,7 @@
     <uses-feature android:required="true" android:name="android.hardware.sensor.stepcounter"/>
 
     <application
-        android:label="step_on_it"
+        android:label="Step On It"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
