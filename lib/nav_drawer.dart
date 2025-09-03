@@ -37,23 +37,36 @@ This app is *soooo* simple we've not felt obliged to offer a training video!
         padding: EdgeInsets.zero,
         children: <Widget>[
           DrawerHeader(
-            child: Text(
-              'Step On It Menu',
-              style: TextStyle(color: Colors.black, fontSize: 25),
-            ),
             decoration: BoxDecoration(
                 color: Colors.lightGreen,
                 image: DecorationImage(
                     fit: BoxFit.none,
                     image: AssetImage('images/logo.png'))
             ),
+            child: const Text(
+              'Step On It Menu',
+              style: TextStyle(color: Colors.black, fontSize: 25),
+            ),
           ),
           ListTile(
             leading: Icon(Icons.privacy_tip),
             title: Text('Privacy Policy'),
-            onTap: () {
-              Navigator.of(context).pop(); // Dismiss menu
-              // Navigator.of(context).pushNamed(ROUTE_PRIVACY);
+            onTap: () async {
+              await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder:  (context) => AlertDialog(
+                          title: const Text("Privacy Policy"),
+                          content: Text("We do not upload any data, at all, ever."),
+                          actions: <Widget> [
+                            TextButton(
+                                child: Text("OK"),
+                                onPressed: () async {
+                                  Navigator.of(context).pop(); // Alert
+                                  Navigator.of(context).pop(); // Menu
+                                }
+                            )
+                          ])));
             },
           ),
           ListTile(
@@ -62,7 +75,7 @@ This app is *soooo* simple we've not felt obliged to offer a training video!
             onTap: () {
               Navigator.of(context).pop(); // Dismiss menu
               Navigator.of(context).push(MaterialPageRoute(
-				builder: (BuildContext context) => const SettingsPage()));
+				        builder: (BuildContext context) => const SettingsPage()));
               },
 		    ),
           ListTile(
