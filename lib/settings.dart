@@ -33,7 +33,7 @@ class SettingsState extends State<SettingsPage> {
                 TextInputSettingsTile(
                   title: "Daily Steps Goal",
                   initialValue: goal.toString(),
-                  settingKey: Constants.KEY_DAILY_GOAL,
+                  settingKey: Constants.KEY_GOAL_SETTING,
                   keyboardType: TextInputType.numberWithOptions(signed:false, decimal:false),
                   validator: (stepsGoal) {
                     // Must be a valid number
@@ -45,7 +45,7 @@ class SettingsState extends State<SettingsPage> {
                     }
                     return "Daily steps goal must be numeric digits.";
                   },
-                  :rrorColor: Colors.redAccent,
+                  errorColor: Colors.redAccent,
                 ),
               ]),
           SettingsGroup(

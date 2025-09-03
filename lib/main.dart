@@ -9,6 +9,8 @@ import 'dart:async';
 
 import 'package:step_on_it/nav_drawer.dart';
 
+import 'constants.dart';
+
 late SharedPreferences prefs;
 late String version;
 late int buildNumber;
@@ -19,7 +21,8 @@ double percentage = 0;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   prefs = await SharedPreferences.getInstance();
-  goal = prefs.getInt(Constants.KEY_GOAL_SETTING, default_goal);
+  goal = prefs.getInt(Constants.KEY_GOAL_SETTING) == null ?
+    default_goal : prefs.getInt(Constants.KEY_GOAL_SETTING)!;
   PackageInfo packageInfo = await PackageInfo.fromPlatform();
   version = packageInfo.version;
   buildNumber = int.parse(packageInfo.buildNumber);
