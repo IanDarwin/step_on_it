@@ -2,6 +2,13 @@
 
 A simple step-counter in Flutter.
 
+== Still TODO
+
+Add a nav drawer, with a Settings icon.
+
+Add Shared_prefs_screens screen with goal-setting numeric field,
+use it to update 'goal.'
+
 == License
 
 Step On It © 2025 by Ian Darwin, Rejminet Group Inc. is licensed under
