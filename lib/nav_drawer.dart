@@ -22,7 +22,7 @@ Contact ian@darwinsys.com.
 <p>Version $version Build $buildNumber<br/>Running on $deviceDescription</p>
 <p><b>Step On It</b> - The easy way to track your daily steps
 and compare them with your exercise goal.
-This app is _soooo_ simple we've not felt oblliged to offer a training video!
+This app is *soooo* simple we've not felt obliged to offer a training video!
 </p>
 </html>
       """,
