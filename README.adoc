@@ -1,0 +1,11 @@
+= step_on_it
+
+A simple step-counter in Flutter.
+
+== License
+
+Distributed under the CC-BY-NC license.
+
+Since parts were vibe-coded, society has paid the price
+in terms of climate-damaging emissions, so this app will not and
+can not legally (by its license) be monetized.
