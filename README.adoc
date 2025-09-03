@@ -4,8 +4,10 @@ A simple step-counter in Flutter.
 
 == License
 
-Distributed under the CC-BY-NC license.
+Step On It © 2025 by Ian Darwin, Rejminet Group Inc. is licensed under
+https://creativecommons.org/licenses/by-nc/4.0/[Creative Commons 
+Attribution-NonCommercial 4.0 International].
 
-Since parts were vibe-coded, society has paid the price
-in terms of climate-damaging emissions, so this app will not and
-can not legally (by its license) be monetized.
+Since parts were vibe-coded, society has already paid the price
+in terms of climate-damaging emissions from AI data centers,
+so this app and any derivatives will not, and can not legally (by its license), be monetized.
