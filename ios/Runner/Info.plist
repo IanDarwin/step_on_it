@@ -26,6 +26,10 @@
 	<true/>
 	<key>NSMotionUsageDescription></key>
 	<string>We need access to motion data to track your steps!</string>
+	<key>UIBackgroundModes</key>
+    <array>
+        <string>processing</string>
+    </array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

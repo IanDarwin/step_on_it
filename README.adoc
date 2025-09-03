@@ -7,10 +7,10 @@ the https://pub.dev/packages/pedometer[pedometer library].
 
 == Still TODO
 
-Add a nav drawer, with a Settings icon.
+Flesh out the nav drawer.
 
-Add Shared_prefs_screens screen with goal-setting numeric field,
-use it to update 'goal.'
+Use a reactive framework to tell main when values like 'goal' are changed
+(as right now it doesn't redraw with the new 'goal' value until the next event).
 
 == License
 

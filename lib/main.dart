@@ -1,11 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:material_charts/material_charts.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:pedometer/pedometer.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 
-void main() {
+import 'package:step_on_it/nav_drawer.dart';
+
+late SharedPreferences prefs;
+late String version;
+late int buildNumber;
+double percentage = 0;
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  prefs = await SharedPreferences.getInstance();
+  PackageInfo packageInfo = await PackageInfo.fromPlatform();
+  version = packageInfo.version;
+  buildNumber = int.parse(packageInfo.buildNumber);
+  await Settings.init();
   runApp(const MyApp());
 }
 
@@ -58,6 +73,9 @@ class _StepCounterPageState extends State<StepCounterPage> {
     setState(() {
       _totalSteps = event.steps;
       _stepsToday = _totalSteps - _stepsAtMidnight;
+      percentage = _stepsToday*100.0 / goal;
+      if (percentage > 0)
+        percentage = 100;
     });
     _saveData();
   }
@@ -154,12 +172,13 @@ class _StepCounterPageState extends State<StepCounterPage> {
       appBar: AppBar(
         title: const Text('Step Counter'),
       ),
+      drawer: NavDrawer(),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             MaterialChartHollowSemiCircle(
-              percentage: _stepsToday*100.0 / goal,
+              percentage: percentage,
               size: 280,
               hollowRadius: 0.65,
               style: ChartStyle(
