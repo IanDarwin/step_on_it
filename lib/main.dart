@@ -200,9 +200,9 @@ class _StepCounterPageState extends State<StepCounterPage> {
             ),
             Center(
               child: Text(
-                _status,
+                _status[0].toUpperCase() + _status.substring(1),
                 style: _status == 'walking' || _status == 'stopped'
-                    ? const TextStyle(fontSize: 30, color: Colors.black)
+                    ? const TextStyle(fontSize: 30, color: Colors.green)
                     : const TextStyle(fontSize: 20, color: Colors.red),
               ),
             )

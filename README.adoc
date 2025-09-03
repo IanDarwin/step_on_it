@@ -2,6 +2,9 @@
 
 A simple step-counter in Flutter.
 
+The heavy lifiting of step countin is done by 
+the https://pub.dev/packages/pedometer[pedometer library].
+
 == Still TODO
 
 Add a nav drawer, with a Settings icon.
