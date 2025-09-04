@@ -9,8 +9,7 @@ the https://pub.dev/packages/pedometer[pedometer library].
 
 Flesh out the nav drawer.
 
-Use a reactive framework to tell main when values like 'goal' are changed
-(as right now it doesn't redraw with the new 'goal' value until the next event).
+Fails to disply properly in landscape - must fix!
 
 == License
 
