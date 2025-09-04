@@ -38,7 +38,7 @@ class SettingsState extends State<SettingsPage> {
                   title: "Daily Steps Goal",
                   defaultValue: goal.toDouble(),
                   settingKey: Constants.KEY_GOAL_SETTING,
-                  min: 100.0,
+                  min: 250.0,
                   max: goal < defaultGoal ? 1.2 * defaultGoal : 2.0 * goal,
                   step: 100.0,
                   onChange: (double value) async {
