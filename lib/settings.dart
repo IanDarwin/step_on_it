@@ -29,22 +29,22 @@ class SettingsState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     // Get the provider instance without listening
     final goalModel = Provider.of<GoalModel>(context, listen: false);
-    final int goal = goalModel.goal;
+    final double goal = goalModel.goal;
     return SettingsScreen(title: "Step On It Settings",
         children: <Widget>[
           SettingsGroup(title: "Personalization",
               children: [
                 SliderSettingsTile(
                   title: "Daily Steps Goal",
-                  defaultValue: goal.toDouble(),
+                  defaultValue: goal,
                   settingKey: Constants.KEY_GOAL_SETTING,
                   min: 250.0,
                   max: goal < defaultGoal ? 1.2 * defaultGoal : 2.0 * goal,
                   step: 100.0,
                   onChange: (double value) async {
-					          goalModel.setGoal(value.round());
-                    await prefs.setInt(Constants.KEY_GOAL_SETTING, value.round());
-				          },
+                    goalModel.setGoal(value);
+                    await prefs.setDouble(Constants.KEY_GOAL_SETTING, value);
+                  },
                 ),
               ]),
           SettingsGroup(

@@ -143,7 +143,7 @@ class StepCounterPageState extends State<StepCounterPage> {
         _status = 'Permission Denied';
       });
     }
-    int? savedGoal = prefs.getInt(Constants.KEY_GOAL_SETTING);
+    double? savedGoal = prefs.getDouble(Constants.KEY_GOAL_SETTING);
     if (savedGoal != null) {
       var goalModel = Provider.of<GoalModel>(context, listen:false);
       goalModel.setGoal(savedGoal);
@@ -258,7 +258,7 @@ class StepCounterPageState extends State<StepCounterPage> {
                       color: Colors.grey[600],
                     ),
                     legendFormatter: (label, percentage) =>
-                      "${label=='Active'?_stepsToday:currentGoal-_stepsToday} of $currentGoal",
+                      "${label=='Active'?_stepsToday.round():(currentGoal-_stepsToday).round()} of ${currentGoal.round()}",
                   ),
                 ),
                 const Divider(

@@ -5,7 +5,7 @@ import 'package:test/test.dart';
     test('Setting goal value works', () {
       final goal = GoalModel();
       print("Initial goal setting ${goal.goal}");
-      final newGoal = 7500;
+      final newGoal = 7500.0;
       bool called = false;
       goal.addListener(() {
         print("kilroy was here");

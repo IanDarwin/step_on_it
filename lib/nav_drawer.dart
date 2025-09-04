@@ -16,9 +16,9 @@ class NavDrawer extends StatelessWidget {
 <html lang="en">
 <h3>You're about to Step On It</h3>
 <p><b>Step On It</b> - The easy way to track your daily steps
-and as you work towards your exercise steps goal today!
+as you work towards your exercise steps goal today!
 </p><p>
-This app is <em>soooo</em> simple we've not felt obliged to offer a training video!
+This app is <em>soooo simple</em> we've not felt obliged to offer a training video!
 </p>
 <p>Built by Ian Darwin of Rejminet Group Inc.
 We can build all-platform apps for you too.

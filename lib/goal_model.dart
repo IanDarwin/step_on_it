@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'main.dart' show defaultGoal;
 
 class GoalModel extends ChangeNotifier {
-  int _goal = defaultGoal;
+  double _goal = defaultGoal.toDouble();
 
-  int get goal => _goal;
+  double get goal => _goal;
 
-  void setGoal(int newGoal) {
+  void setGoal(double newGoal) {
     _goal = newGoal;
     notifyListeners();
   }
