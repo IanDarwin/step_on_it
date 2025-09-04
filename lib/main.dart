@@ -14,7 +14,7 @@ import 'constants.dart';
 late SharedPreferences prefs;
 late String version;
 late int buildNumber;
-const default_goal = 10000;
+const defaultGoal = 10000;
 int goal = 0;
 double percentage = 0;
 
@@ -26,7 +26,7 @@ void main() async {
     goal = prefs.getDouble(Constants.KEY_GOAL_SETTING)!.toInt();
   } catch(exc) {
     debugPrint("Getting goal from prefs blew $exc");
-    goal = default_goal;
+    goal = defaultGoal;
   }
   PackageInfo packageInfo = await PackageInfo.fromPlatform();
   version = packageInfo.version;
@@ -54,10 +54,10 @@ class StepCounterPage extends StatefulWidget {
   const StepCounterPage({super.key});
 
   @override
-  _StepCounterPageState createState() => _StepCounterPageState();
+  StepCounterPageState createState() => StepCounterPageState();
 }
 
-class _StepCounterPageState extends State<StepCounterPage> {
+class StepCounterPageState extends State<StepCounterPage> {
   late Stream<StepCount> _stepCountStream;
   late Stream<PedestrianStatus> _pedestrianStatusStream;
   String _status = "Don't know yet";
@@ -83,8 +83,9 @@ class _StepCounterPageState extends State<StepCounterPage> {
       _totalSteps = event.steps;
       _stepsToday = _totalSteps - _stepsAtMidnight;
       percentage = _stepsToday*100.0 / goal;
-      if (percentage > 100)
+      if (percentage > 100) {
         percentage = 100;
+      }
     });
     _saveData();
   }
