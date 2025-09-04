@@ -63,7 +63,6 @@ class StepCounterPageState extends State<StepCounterPage> {
   int _totalSteps = 0;
   int _stepsToday = 0;
   int _stepsAtMidnight = 0;
-  late SharedPreferences _prefs;
   bool _firstStepEventReceived = false;
   Timer? _timer;
 
@@ -116,7 +115,6 @@ class StepCounterPageState extends State<StepCounterPage> {
   }
 
   Future<void> initPlatformState() async {
-    _prefs = await SharedPreferences.getInstance();
     await _loadSavedData();
     
     var status = await Permission.activityRecognition.request();
@@ -162,11 +160,11 @@ class StepCounterPageState extends State<StepCounterPage> {
   }
 
   Future<void> _loadSavedData() async {
-    _stepsAtMidnight = _prefs.getInt('stepsAtMidnight') ?? 0;
+    _stepsAtMidnight = prefs.getInt('stepsAtMidnight') ?? 0;
     
     // We can calculate _stepsToday from saved data to show the last known count,
     // but this will be corrected by the first step event.
-    int lastTotalSteps = _prefs.getInt('lastTotalSteps') ?? 0;
+    int lastTotalSteps = prefs.getInt('lastTotalSteps') ?? 0;
     if (lastTotalSteps > _stepsAtMidnight) {
       setState(() {
         _stepsToday = lastTotalSteps - _stepsAtMidnight;
@@ -175,14 +173,14 @@ class StepCounterPageState extends State<StepCounterPage> {
   }
 
   Future<void> _saveData() async {
-    await _prefs.setInt('stepsAtMidnight', _stepsAtMidnight);
-    await _prefs.setString('lastResetDate', DateTime.now().toIso8601String().substring(0, 10));
-    await _prefs.setInt('lastTotalSteps', _totalSteps);
+    await prefs.setInt('stepsAtMidnight', _stepsAtMidnight);
+    await prefs.setString('lastResetDate', DateTime.now().toIso8601String().substring(0, 10));
+    await prefs.setInt('lastTotalSteps', _totalSteps);
   }
 
   void _checkAndResetDailySteps(int currentTotalSteps) async {
     final now = DateTime.now();
-    final lastResetDateString = _prefs.getString('lastResetDate');
+    final lastResetDateString = prefs.getString('lastResetDate');
     final lastResetDate = lastResetDateString != null ? DateTime.parse(lastResetDateString) : null;
 
     if (lastResetDate == null ||
@@ -193,7 +191,7 @@ class StepCounterPageState extends State<StepCounterPage> {
       _resetSteps(currentTotalSteps);
     } else {
        // If it's the same day, update _stepsAtMidnight to the loaded value.
-       _stepsAtMidnight = _prefs.getInt('stepsAtMidnight') ?? 0;
+       _stepsAtMidnight = prefs.getInt('stepsAtMidnight') ?? 0;
     }
   }
 
