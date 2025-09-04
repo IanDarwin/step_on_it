@@ -19,9 +19,9 @@ int goal = 0;
 double percentage = 0;
 
 void main() async {
-
   WidgetsFlutterBinding.ensureInitialized();
   prefs = await SharedPreferences.getInstance();
+  await Settings.init();
   try {
     goal = prefs.getDouble(Constants.KEY_GOAL_SETTING)!.toInt();
   } catch(exc) {
@@ -31,7 +31,6 @@ void main() async {
   PackageInfo packageInfo = await PackageInfo.fromPlatform();
   version = packageInfo.version;
   buildNumber = int.parse(packageInfo.buildNumber);
-  await Settings.init();
   runApp(const MyApp());
 }
 
@@ -66,11 +65,18 @@ class StepCounterPageState extends State<StepCounterPage> {
   int _stepsAtMidnight = 0;
   late SharedPreferences _prefs;
   bool _firstStepEventReceived = false;
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
     initPlatformState();
+  }
+
+  @override
+  void dispose() { 
+    _timer?.cancel();
+    super.dispose();
   }
 
   void onStepCount(StepCount event) {
@@ -122,11 +128,37 @@ class StepCounterPageState extends State<StepCounterPage> {
 
       _stepCountStream = Pedometer.stepCountStream;
       _stepCountStream.listen(onStepCount).onError(onStepCountError);
+      _startMidnightTimer(); // Start the timer after everything is initialized
     } else {
       setState(() {
         _status = 'Permission Denied';
       });
     }
+  }
+
+  void _startMidnightTimer() {
+    final now = DateTime.now();
+    final nextMidnight = DateTime(now.year, now.month, now.day + 1);
+    final duration = nextMidnight.difference(now);
+    
+    _timer = Timer(duration, () {
+      _resetAtMidnight();
+      // Set a new timer for the next midnight
+      _timer = Timer.periodic(const Duration(days: 1), (timer) {
+        _resetAtMidnight();
+      });
+    });
+  }
+
+  void _resetAtMidnight() {
+    // We can't rely on _totalSteps being updated at this exact moment,
+    // so we get the current total steps from the latest event.
+    // This is a robust approach for a midnight reset.
+    _stepsAtMidnight = _totalSteps;
+    _stepsToday = _totalSteps - _stepsAtMidnight; // This SHOULD set stepsToday to 0
+    _saveData();
+    
+    setState(() {}); // Force a rebuild to update the UI
   }
 
   Future<void> _loadSavedData() async {
