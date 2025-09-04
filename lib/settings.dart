@@ -35,9 +35,13 @@ class SettingsState extends State<SettingsPage> {
                   min: 100,
                   max: goal < defaultGoal ? 1.2 * defaultGoal : 2.0 * goal,
                   step: 100,
-                  onChange: (value) {
-                      goal = value.toInt();
-                  },
+                  onChange: (double value) {
+					// Get the provider instance without listening
+					final goalModel = Provider.of<GoalModel>(context, listen: false);
+
+					// Call the setGoal method to update the value
+					goalModel.setGoal(value.round());
+				  },
                 ),
               ]),
           SettingsGroup(

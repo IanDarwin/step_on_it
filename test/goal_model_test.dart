@@ -11,7 +11,7 @@ import 'package:test/test.dart';
         print("kilroy was here");
         called = true;
       });
-      goal.setGoal(newGoal, true);
+      goal.setGoal(newGoal);
       expect(called, true);
       expect(goal.goal, newGoal);
     });

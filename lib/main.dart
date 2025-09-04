@@ -30,7 +30,12 @@ void main() async {
   PackageInfo packageInfo = await PackageInfo.fromPlatform();
   version = packageInfo.version;
   buildNumber = int.parse(packageInfo.buildNumber);
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => GoalModel(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -212,66 +217,72 @@ class StepCounterPageState extends State<StepCounterPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Step Counter'),
-      ),
-      drawer: NavDrawer(),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            MaterialChartHollowSemiCircle(
-              percentage: percentage,
-              size: 280,
-              hollowRadius: 0.65,
-              style: ChartStyle(
-                activeColor: Colors.green,
-                inactiveColor: Colors.grey[300]!,
-                showPercentageText: true,
-                showLegend: true,
-                percentageStyle: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.black87,
+    // Use a Consumer or Provider.of to access the GoalModel
+    return Consumer<GoalModel>(
+      builder: (context, goalModel, child) {
+        final currentGoal = goalModel.goal; // Get the current goal from the provider
+
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Step Counter'),
+          ),
+          drawer: NavDrawer(),
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                MaterialChartHollowSemiCircle(
+                  percentage: percentage,
+                  size: 280,
+                  hollowRadius: 0.65,
+                  style: ChartStyle(
+                    activeColor: Colors.green,
+                    inactiveColor: Colors.grey[300]!,
+                    showPercentageText: true,
+                    showLegend: true,
+                    percentageStyle: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.black87,
+                    ),
+                    legendStyle: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[600],
+                    ),
+                    legendFormatter: (label, percentage) =>
+                      "${label=='Active'?_stepsToday:currentGoal-_stepsToday} of $goal",
+                  ),
                 ),
-                legendStyle: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[600],
+                const Divider(
+                  height: 100,
+                  thickness: 0,
+                  color: Colors.white,
                 ),
-                legendFormatter: (label, percentage) =>
-                  "${label=='Active'?_stepsToday:goal-_stepsToday} of $goal",
-              ),
+                const Text(
+                  'Status:',
+                  style: TextStyle(fontSize: 30),
+                ),
+                Icon(
+                  _status == 'walking'
+                      ? Icons.directions_walk
+                      : _status == 'stopped'
+                          ? Icons.accessibility_new
+                          : Icons.error,
+                  size: 100,
+                ),
+                Center(
+                  child: Text(
+                    _status[0].toUpperCase() + _status.substring(1),
+                    style: _status == 'walking' || _status == 'stopped'
+                        ? const TextStyle(fontSize: 30, color: Colors.green)
+                        : const TextStyle(fontSize: 20, color: Colors.red),
+                  ),
+                )
+              ],
             ),
-            const Divider(
-              height: 100,
-              thickness: 0,
-              color: Colors.white,
-            ),
-            const Text(
-              'Status:',
-              style: TextStyle(fontSize: 30),
-            ),
-            Icon(
-              _status == 'walking'
-                  ? Icons.directions_walk
-                  : _status == 'stopped'
-                      ? Icons.accessibility_new
-                      : Icons.error,
-              size: 100,
-            ),
-            Center(
-              child: Text(
-                _status[0].toUpperCase() + _status.substring(1),
-                style: _status == 'walking' || _status == 'stopped'
-                    ? const TextStyle(fontSize: 30, color: Colors.green)
-                    : const TextStyle(fontSize: 20, color: Colors.red),
-              ),
-            )
-          ],
-        ),
-      ),
-    );
+          ),
+        );
+      }
   }
 }

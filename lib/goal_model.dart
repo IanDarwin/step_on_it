@@ -7,10 +7,8 @@ class GoalModel extends ChangeNotifier {
 
   int get goal => _goal;
 
-  void setGoal(int newGoal, bool notify) {
+  void setGoal(int newGoal) {
     _goal = newGoal;
-    if (notify) {
-      notifyListeners();
-    }
+    notifyListeners();
   }
 }
