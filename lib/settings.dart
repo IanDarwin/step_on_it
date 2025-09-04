@@ -3,7 +3,7 @@ import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:provider/provider.dart';
 
 import 'package:step_on_it/constants.dart';
-import 'package:step_on_it/main.dart' show defaultGoal, goal;
+import 'package:step_on_it/main.dart' show defaultGoal, prefs;
 
 import 'goal_model.dart';
 
@@ -13,7 +13,7 @@ class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
 
   @override
-  SettingsState createState() => new SettingsState();
+  SettingsState createState() => SettingsState();
 }
 
 class SettingsState extends State<SettingsPage> {
@@ -29,21 +29,21 @@ class SettingsState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     // Get the provider instance without listening
     final goalModel = Provider.of<GoalModel>(context, listen: false);
-    final goal = goalModel.goal;
-    return SettingsScreen(title: "StepOnIt Settings",
+    final int goal = goalModel.goal;
+    return SettingsScreen(title: "Step On It Settings",
         children: <Widget>[
           SettingsGroup(title: "Personalization",
               children: [
                 SliderSettingsTile(
                   title: "Daily Steps Goal",
-                  defaultValue: 1.0*goal,
+                  defaultValue: goal.toDouble(),
                   settingKey: Constants.KEY_GOAL_SETTING,
-                  min: 100,
+                  min: 100.0,
                   max: goal < defaultGoal ? 1.2 * defaultGoal : 2.0 * goal,
-                  step: 100,
-                  onChange: (double value) {
-					        // Call the setGoal method to update the value
-					        goalModel.setGoal(value.round());
+                  step: 100.0,
+                  onChange: (double value) async {
+					          goalModel.setGoal(value.round());
+                    await prefs.setInt(Constants.KEY_GOAL_SETTING, value.round());
 				          },
                 ),
               ]),

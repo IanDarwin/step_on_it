@@ -11,6 +11,8 @@ import 'dart:async';
 import 'package:step_on_it/nav_drawer.dart';
 import 'package:step_on_it/goal_model.dart';
 
+import 'constants.dart';
+
 late SharedPreferences prefs;
 late String version;
 late int buildNumber;
@@ -140,6 +142,11 @@ class StepCounterPageState extends State<StepCounterPage> {
       setState(() {
         _status = 'Permission Denied';
       });
+    }
+    int? savedGoal = prefs.getInt(Constants.KEY_GOAL_SETTING);
+    if (savedGoal != null) {
+      var goalModel = Provider.of<GoalModel>(context, listen:false);
+      goalModel.setGoal(savedGoal);
     }
   }
 
