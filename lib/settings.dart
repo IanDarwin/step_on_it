@@ -30,22 +30,16 @@ class SettingsState extends State<SettingsPage> {
         children: <Widget>[
           SettingsGroup(title: "Personalization",
               children: [
-                TextInputSettingsTile(
+                SliderSettingsTile(
                   title: "Daily Steps Goal",
-                  initialValue: goal.toString(),
+                  defaultValue: 1.0*goal,
                   settingKey: Constants.KEY_GOAL_SETTING,
-                  keyboardType: TextInputType.numberWithOptions(signed:false, decimal:false),
-                  validator: (stepsGoal) {
-                    // Must be a valid number
-                    if (stepsGoal != null && stepsGoal.isNotEmpty &&
-                        RegExp(r'^\d+$').hasMatch(stepsGoal)) {
-                      goal = int.parse(stepsGoal);
-                      // XXX Propagate value
-                      return null;
-                    }
-                    return "Daily steps goal must be numeric digits.";
+                  min: 100,
+                  max: 1.0*goal,
+                  step: 100,
+                  onChange: (value) {
+                      goal = value.toInt();
                   },
-                  errorColor: Colors.redAccent,
                 ),
               ]),
           SettingsGroup(

@@ -19,10 +19,15 @@ int goal = 0;
 double percentage = 0;
 
 void main() async {
+
   WidgetsFlutterBinding.ensureInitialized();
   prefs = await SharedPreferences.getInstance();
-  goal = prefs.getInt(Constants.KEY_GOAL_SETTING) == null ?
-    default_goal : prefs.getInt(Constants.KEY_GOAL_SETTING)!;
+  try {
+    goal = prefs.getDouble(Constants.KEY_GOAL_SETTING)!.toInt();
+  } catch(exc) {
+    debugPrint("Getting goal from prefs blew $exc");
+    goal = default_goal;
+  }
   PackageInfo packageInfo = await PackageInfo.fromPlatform();
   version = packageInfo.version;
   buildNumber = int.parse(packageInfo.buildNumber);
@@ -55,7 +60,7 @@ class StepCounterPage extends StatefulWidget {
 class _StepCounterPageState extends State<StepCounterPage> {
   late Stream<StepCount> _stepCountStream;
   late Stream<PedestrianStatus> _pedestrianStatusStream;
-  String _status = 'Unknown';
+  String _status = "Don't know yet";
   int _totalSteps = 0;
   int _stepsToday = 0;
   int _stepsAtMidnight = 0;
