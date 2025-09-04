@@ -4,29 +4,29 @@ import 'package:material_charts/material_charts.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:pedometer/pedometer.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 
-import 'package:step_on_it/constants.dart';
 import 'package:step_on_it/nav_drawer.dart';
+import 'package:step_on_it/goal_model.dart';
 
 late SharedPreferences prefs;
 late String version;
 late int buildNumber;
 const defaultGoal = 10000;
-int goal = 0;
-double percentage = 0;
+//double percentage = 0;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   prefs = await SharedPreferences.getInstance();
   await Settings.init();
-  try {
-    goal = prefs.getDouble(Constants.KEY_GOAL_SETTING)!.toInt();
-  } catch(exc) {
-    debugPrint("Getting goal from prefs blew $exc");
-    goal = defaultGoal;
-  }
+  // try {
+  //   goal = prefs.getDouble(Constants.KEY_GOAL_SETTING)!.toInt();
+  // } catch(exc) {
+  //   debugPrint("Getting goal from prefs blew $exc");
+  //   goal = defaultGoal;
+  // }
   PackageInfo packageInfo = await PackageInfo.fromPlatform();
   version = packageInfo.version;
   buildNumber = int.parse(packageInfo.buildNumber);
@@ -91,15 +91,15 @@ class StepCounterPageState extends State<StepCounterPage> {
     setState(() {
       _totalSteps = event.steps;
       _stepsToday = _totalSteps - _stepsAtMidnight;
-      percentage = _stepsToday*100.0 / goal;
-      if (percentage > 100) {
-        debugPrint("OOPS: Percentage high: $percentage");
-        percentage = 100;
-      }
-      if (percentage < 0) {
-        debugPrint("OOPS: Percentage low: $percentage");
-        percentage = 0;
-      }
+      // percentage = _stepsToday*100.0 / currentGoal;
+      // if (percentage > 100) {
+      //   debugPrint("OOPS: Percentage high: $percentage");
+      //   percentage = 100;
+      // }
+      // if (percentage < 0) {
+      //   debugPrint("OOPS: Percentage low: $percentage");
+      //   percentage = 0;
+      // }
     });
     _saveData();
   }
@@ -232,7 +232,7 @@ class StepCounterPageState extends State<StepCounterPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 MaterialChartHollowSemiCircle(
-                  percentage: percentage,
+                  percentage: _stepsToday / currentGoal,
                   size: 280,
                   hollowRadius: 0.65,
                   style: ChartStyle(
@@ -251,7 +251,7 @@ class StepCounterPageState extends State<StepCounterPage> {
                       color: Colors.grey[600],
                     ),
                     legendFormatter: (label, percentage) =>
-                      "${label=='Active'?_stepsToday:currentGoal-_stepsToday} of $goal",
+                      "${label=='Active'?_stepsToday:currentGoal-_stepsToday} of $currentGoal",
                   ),
                 ),
                 const Divider(
@@ -283,6 +283,6 @@ class StepCounterPageState extends State<StepCounterPage> {
             ),
           ),
         );
-      }
+      });
   }
 }

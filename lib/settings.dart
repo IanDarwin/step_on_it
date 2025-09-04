@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
+import 'package:provider/provider.dart';
 
 import 'package:step_on_it/constants.dart';
 import 'package:step_on_it/main.dart' show defaultGoal, goal;
+
+import 'goal_model.dart';
 
 /// Activity for Settings.
 ///
@@ -24,6 +27,9 @@ class SettingsState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Get the provider instance without listening
+    final goalModel = Provider.of<GoalModel>(context, listen: false);
+    final goal = goalModel.goal;
     return SettingsScreen(title: "StepOnIt Settings",
         children: <Widget>[
           SettingsGroup(title: "Personalization",
@@ -36,12 +42,9 @@ class SettingsState extends State<SettingsPage> {
                   max: goal < defaultGoal ? 1.2 * defaultGoal : 2.0 * goal,
                   step: 100,
                   onChange: (double value) {
-					// Get the provider instance without listening
-					final goalModel = Provider.of<GoalModel>(context, listen: false);
-
-					// Call the setGoal method to update the value
-					goalModel.setGoal(value.round());
-				  },
+					        // Call the setGoal method to update the value
+					        goalModel.setGoal(value.round());
+				          },
                 ),
               ]),
           SettingsGroup(
