@@ -20,4 +20,13 @@ Attribution-NonCommercial 4.0 International].
 
 Since parts were vibe-coded, society has already paid the price
 in terms of climate-damaging emissions from AI data centers,
-so this app and any derivatives will not, and can not legally (by its license), be monetized.
+so this app and any derivatives will not,
+and can not legally (by its license), be monetized.
+
+== Launcher Icons
+
+If you change images/soi-logo.png, you should run
+
+    flutter pub get
+    dart run flutter_launcher_icons:main
+
