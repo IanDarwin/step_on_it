@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 
-import 'package:step_on_it/main.dart' show prefs, goal;
-
-import 'constants.dart';
+import 'package:step_on_it/constants.dart';
+import 'package:step_on_it/main.dart' show defaultGoal, goal;
 
 /// Activity for Settings.
 ///
@@ -25,7 +24,6 @@ class SettingsState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-
     return SettingsScreen(title: "StepOnIt Settings",
         children: <Widget>[
           SettingsGroup(title: "Personalization",
@@ -35,7 +33,7 @@ class SettingsState extends State<SettingsPage> {
                   defaultValue: 1.0*goal,
                   settingKey: Constants.KEY_GOAL_SETTING,
                   min: 100,
-                  max: 1.0*goal,
+                  max: goal < defaultGoal ? 1.2 * defaultGoal : 2.0 * goal,
                   step: 100,
                   onChange: (value) {
                       goal = value.toInt();

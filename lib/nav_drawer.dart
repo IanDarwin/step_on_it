@@ -15,15 +15,16 @@ class NavDrawer extends StatelessWidget {
       HtmlWidget("""
 <html lang="en">
 <h3>You're about to Step On It</h3>
+<p><b>Step On It</b> - The easy way to track your daily steps
+and as you work towards your exercise goal of $goal steps today!
+</p><p>
+This app is *soooo* simple we've not felt obliged to offer a training video!
+</p>
 <p>Built by Ian Darwin of Rejminet Group Inc.
 We can build all-platform apps for you too.
 Contact ian@darwinsys.com.
 </p>
 <p>Version $version Build $buildNumber<br/>Running on $deviceDescription</p>
-<p><b>Step On It</b> - The easy way to track your daily steps
-and compare them with your exercise goal.
-This app is *soooo* simple we've not felt obliged to offer a training video!
-</p>
 </html>
       """,
         onTapUrl: (url) {
@@ -41,7 +42,7 @@ This app is *soooo* simple we've not felt obliged to offer a training video!
                 color: Colors.lightGreen,
                 image: DecorationImage(
                     fit: BoxFit.none,
-                    image: AssetImage('images/logo.png'))
+                    image: AssetImage('images/soi-logo.png'))
             ),
             child: const Text(
               'Step On It Menu',
@@ -105,28 +106,6 @@ This app is *soooo* simple we've not felt obliged to offer a training video!
             applicationLegalese:
               '\u{a9} 2025 Rejminet Group Inc.',
             aboutBoxChildren: aboutBoxChildren,
-          ),
-          ListTile(
-              leading: Icon(Icons.import_export),
-              title: Text('Export'),
-              onTap: () async {
-                  await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                      builder:  (context) => AlertDialog(
-                          title: const Text("Export failed"),
-                          content: Text("Sorry, not written yet"),
-                          actions: <Widget> [
-                            TextButton(
-                                child: Text("OK"),
-                                onPressed: () async {
-                                  Navigator.of(context).pop(); // Alert
-                                  Navigator.of(context).pop(); // Menu
-                                }
-                            )
-                          ])));
-                  return;
-              }
           ),
         ],
       ),

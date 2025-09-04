@@ -7,9 +7,8 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 
+import 'package:step_on_it/constants.dart';
 import 'package:step_on_it/nav_drawer.dart';
-
-import 'constants.dart';
 
 late SharedPreferences prefs;
 late String version;
@@ -89,7 +88,12 @@ class StepCounterPageState extends State<StepCounterPage> {
       _stepsToday = _totalSteps - _stepsAtMidnight;
       percentage = _stepsToday*100.0 / goal;
       if (percentage > 100) {
+        debugPrint("OOPS: Percentage high: $percentage");
         percentage = 100;
+      }
+      if (percentage < 0) {
+        debugPrint("OOPS: Percentage low: $percentage");
+        percentage = 0;
       }
     });
     _saveData();
