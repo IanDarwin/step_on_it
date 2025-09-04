@@ -41,6 +41,7 @@ class SettingsState extends State<SettingsPage> {
                   min: 250.0,
                   max: goal < defaultGoal ? 1.2 * defaultGoal : 2.0 * goal,
                   step: 100.0,
+                  decimalPrecision: 0,
                   onChange: (double value) async {
                     goalModel.setGoal(value);
                     await prefs.setDouble(Constants.KEY_GOAL_SETTING, value);
