@@ -32,7 +32,7 @@ class SettingsState extends State<SettingsPage> {
     final double goal = goalModel.goal;
     return SettingsScreen(title: "Step On It Settings",
         children: <Widget>[
-          SettingsGroup(title: "Personalization",
+          SettingsGroup(title: "Fitness",
               children: [
                 SliderSettingsTile(
                   title: "Daily Steps Goal",
@@ -40,8 +40,9 @@ class SettingsState extends State<SettingsPage> {
                   settingKey: Constants.KEY_GOAL_SETTING,
                   min: 500.0,
                   max: goal < defaultGoal ? 1.2 * defaultGoal : 2.0 * goal,
-                  step: 100.0,
+                  step: 250.0,
                   decimalPrecision: 0,
+                  subtitleTextStyle: TextStyle(fontSize: 16),
                   onChange: (double value) async {
                     goalModel.setGoal(value);
                     await prefs.setDouble(Constants.KEY_GOAL_SETTING, value);
@@ -50,25 +51,23 @@ class SettingsState extends State<SettingsPage> {
               ],
           ),
           SettingsGroup(
-            title: "More stuff?",
+            title: "App Customization",
             children: [
               DropDownSettingsTile<int>(
-                title: 'Something',
-                selected: 1,
+                title: 'History to Keep & display',
+                selected: 0,
                 settingKey: Constants.KEY_DUMMY,
                   values: {
-                  1: "1",
-                  2: "2",
-                  3: "3",
-                  4: "4",
-                  5: "5",
+                    0: "Don't save",
+                    1: "1 day",
+                    2: "2",
+                    3: "3",
+                    4: "4",
+                    5: "5",
+                    6: "6",
+                    7: "7",
                 }
               ),
-            ],
-          ),
-          SettingsGroup(
-            title: "Personalization",
-            children: [
               SwitchSettingsTile(
                 title: "Dark mode",
                   leading: Icon(Icons.dark_mode),
