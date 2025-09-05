@@ -38,7 +38,7 @@ class SettingsState extends State<SettingsPage> {
                   title: "Daily Steps Goal",
                   defaultValue: goal,
                   settingKey: Constants.KEY_GOAL_SETTING,
-                  min: 250.0,
+                  min: 500.0,
                   max: goal < defaultGoal ? 1.2 * defaultGoal : 2.0 * goal,
                   step: 100.0,
                   decimalPrecision: 0,
@@ -47,7 +47,8 @@ class SettingsState extends State<SettingsPage> {
                     await prefs.setDouble(Constants.KEY_GOAL_SETTING, value);
                   },
                 ),
-              ]),
+              ],
+          ),
           SettingsGroup(
             title: "More stuff?",
             children: [

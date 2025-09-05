@@ -93,15 +93,6 @@ class StepCounterPageState extends State<StepCounterPage> {
     setState(() {
       _totalSteps = event.steps;
       _stepsToday = _totalSteps - _stepsAtMidnight;
-      // percentage = _stepsToday*100.0 / currentGoal;
-      // if (percentage > 100) {
-      //   debugPrint("OOPS: Percentage high: $percentage");
-      //   percentage = 100;
-      // }
-      // if (percentage < 0) {
-      //   debugPrint("OOPS: Percentage low: $percentage");
-      //   percentage = 0;
-      // }
     });
     _saveData();
   }
@@ -225,6 +216,16 @@ class StepCounterPageState extends State<StepCounterPage> {
   @override
   Widget build(BuildContext context) {
     // Use a Consumer or Provider.of to access the GoalModel
+    var goalModel = Provider.of<GoalModel>(context, listen: false);
+    double percentage = 100 * _stepsToday.toDouble() / goalModel.goal;
+    if (percentage > 100) {
+      debugPrint("OOPS: Percentage high: $percentage");
+      percentage = 100;
+    }
+    if (percentage < 0) {
+      debugPrint("OOPS: Percentage low: $percentage");
+      percentage = 0;
+    }
     return Consumer<GoalModel>(
       builder: (context, goalModel, child) {
         final currentGoal = goalModel.goal; // Get the current goal from the provider
@@ -238,8 +239,8 @@ class StepCounterPageState extends State<StepCounterPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 MaterialChartHollowSemiCircle(
-                  percentage: 100 * _stepsToday.toDouble() / currentGoal,
-                  size: 290,
+                  percentage: percentage,
+                  size: 250,
                   hollowRadius: 0.65,
                   style: ChartStyle(
                     activeColor: Colors.green,
