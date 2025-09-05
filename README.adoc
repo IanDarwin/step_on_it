@@ -9,7 +9,7 @@ the https://pub.dev/packages/pedometer[pedometer library].
 
 Flesh out the nav drawer.
 
-Fails to disply properly in landscape - must fix!
+Fails to display properly in landscape - must fix!
 
 == License
 

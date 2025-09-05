@@ -228,7 +228,6 @@ class StepCounterPageState extends State<StepCounterPage> {
     return Consumer<GoalModel>(
       builder: (context, goalModel, child) {
         final currentGoal = goalModel.goal; // Get the current goal from the provider
-
         return Scaffold(
           appBar: AppBar(
             title: const Text('Step Counter'),
@@ -239,8 +238,8 @@ class StepCounterPageState extends State<StepCounterPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 MaterialChartHollowSemiCircle(
-                  percentage: _stepsToday / currentGoal,
-                  size: 280,
+                  percentage: 100 * _stepsToday.toDouble() / currentGoal,
+                  size: 290,
                   hollowRadius: 0.65,
                   style: ChartStyle(
                     activeColor: Colors.green,
