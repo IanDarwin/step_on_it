@@ -7,6 +7,8 @@ the https://pub.dev/packages/pedometer[pedometer library].
 
 == Still TODO
 
+Notify about permissions before asking.
+
 *Maybe* keep a week's data and show a bargraph at the bottom?
 
 Flesh out the nav drawer - mke mail sending work.
