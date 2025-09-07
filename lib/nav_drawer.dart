@@ -58,7 +58,7 @@ Contact ian@darwinsys.com.
                   MaterialPageRoute(
                       builder:  (context) => AlertDialog(
                           title: const Text("Privacy Policy"),
-                          content: Text("We do not upload any data, at all, ever."),
+                          content: const Text("We do not upload any data, at all, ever."),
                           actions: <Widget> [
                             TextButton(
                                 child: Text("OK"),

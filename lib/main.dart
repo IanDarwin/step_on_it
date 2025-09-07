@@ -118,7 +118,23 @@ class StepCounterPageState extends State<StepCounterPage> {
 
   Future<void> initPlatformState() async {
     await _loadSavedData();
-    
+
+    if (Permission.activityRecognition.isGranted != PermissionStatus.granted) {
+      await Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder:  (context) => AlertDialog(
+                  title: const Text("Permission Request"),
+                  content: const Text("We need physical activity sensor permission to count your steps."),
+                  actions: <Widget> [
+                    TextButton(
+                        child: Text("OK"),
+                        onPressed: () async {
+                          Navigator.of(context).pop(); // Alert
+                        }
+                    )
+                  ])));
+    }
     var status = await Permission.activityRecognition.request();
     if (status.isGranted) {
       _pedestrianStatusStream = Pedometer.pedestrianStatusStream;
