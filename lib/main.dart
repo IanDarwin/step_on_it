@@ -139,7 +139,7 @@ class StepCounterPageState extends State<StepCounterPage> {
                             }
                         )
                       ])));
-
+     }
       if ((await Permission.activityRecognition.request()).isGranted) {
         _pedestrianStatusStream = Pedometer.pedestrianStatusStream;
         _pedestrianStatusStream
@@ -154,7 +154,6 @@ class StepCounterPageState extends State<StepCounterPage> {
           _status = 'Permission Denied';
         });
       }
-    }
 
     double? savedGoal = prefs.getDouble(Constants.KEY_GOAL_SETTING);
     if (savedGoal != null) {
