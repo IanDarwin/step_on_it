@@ -129,8 +129,15 @@ class StepCounterPageState extends State<StepCounterPage> {
               builder: (context) =>
                   AlertDialog(
                       title: const Text("Permission Request"),
-                      content: const Text(
-                          "We need physical activity sensor permission to count your steps."),
+                      content: const Text("""
+Step On It saves your personal step count, only on your device.
+That's the point of this app, after all!
+
+We need physical activity sensor permission to count your steps.
+
+We never ever upload any data, anywhere.
+
+You can export the data; what you do with it then is not on us."""),
                       actions: <Widget>[
                         TextButton(
                             child: Text("OK"),
@@ -166,7 +173,7 @@ class StepCounterPageState extends State<StepCounterPage> {
     final now = DateTime.now();
     final nextMidnight = DateTime(now.year, now.month, now.day + 1);
     final duration = nextMidnight.difference(now);
-    
+
     _timer = Timer(duration, () {
       _resetAtMidnight();
       // Set a new timer for the next midnight
@@ -183,13 +190,13 @@ class StepCounterPageState extends State<StepCounterPage> {
     _stepsAtMidnight = _totalSteps;
     _stepsToday = _totalSteps - _stepsAtMidnight; // This SHOULD set stepsToday to 0
     _saveData();
-    
+
     setState(() {}); // Force a rebuild to update the UI
   }
 
   Future<void> _loadSavedData() async {
     _stepsAtMidnight = prefs.getInt('stepsAtMidnight') ?? 0;
-    
+
     // We can calculate _stepsToday from saved data to show the last known count,
     // but this will be corrected by the first step event.
     int lastTotalSteps = prefs.getInt('lastTotalSteps') ?? 0;
@@ -227,7 +234,7 @@ class StepCounterPageState extends State<StepCounterPage> {
     // Set the new baseline for the day.
     _stepsAtMidnight = currentTotalSteps;
     await _saveData();
-    
+
     // Recalculate daily steps after the reset
     setState(() {
       _stepsToday = 0; // Steps today should be zero at the moment of reset
