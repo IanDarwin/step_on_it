@@ -17,10 +17,13 @@ dependencies:
   in_app_review: ^2.0.10
   material_charts: ^0.0.30
   package_info_plus: ^8.0.0
+  path: ^1.9.1
   pedometer: ^4.0.0
   permission_handler: ^12.0.1
   provider: ^6.0.5
   shared_preferences: ^2.3.3
+  sqflite: ^2.4.2
+  sqflite_common_ffi: ^2.3.6
 
 dev_dependencies:
   flutter_test:
