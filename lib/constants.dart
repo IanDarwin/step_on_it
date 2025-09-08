@@ -7,4 +7,6 @@ class Constants {
 
   static String get KEY_GOAL_SETTING => "key_set_your_goal";
 
+  static String get ISSUES_EMAIL => "step_on_it@darwinsys.com";
+
 }

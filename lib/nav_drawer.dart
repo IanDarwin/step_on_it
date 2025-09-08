@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:in_app_review/in_app_review.dart';
 
 import 'package:step_on_it/main.dart' show goal, version, buildNumber;
 import 'package:step_on_it/settings.dart';
+
+import 'constants.dart';
 
 // TEMPORARY
 const deviceDescription = "Mobile";
@@ -91,11 +94,35 @@ Contact ian@darwinsys.com.
             leading: Icon(Icons.mood_bad),
             title: Text('Feedback: Contact/Issue'),
             onTap: () async {
-              print("NOT Sending problem email");
-              // String recipient = Constants.ISSUES_EMAIL;
-              // await Report.sendEmail(context, recipient,
-					    //   "step_on_it: issue: [SUMMARY?]",
-					    //  "", false, null);
+              print("Sending 'problem' email");
+              // We don't prompt for the message body; instead
+              // this should pop open the user's chosen mail
+              // client and let them enter the message
+              final Email email = Email(
+                subject: "step_on_it: issue: [SUMMARY?]",
+                recipients: [Constants.ISSUES_EMAIL],
+                isHTML: false,
+              );
+
+              try {
+                print("calling FlutterEmailSender");
+                await FlutterEmailSender.send(email);
+                print("Mail sent!");
+              } catch (exception) {
+                print("Failure: ${exception.toString()}");
+                MaterialPageRoute(builder: (context)  => AlertDialog(
+                    title: const Text("Failed to send"),
+                    content: Text("Mail sending failed: ${exception.toString()}"),
+                    actions: [
+                      TextButton(
+                          child: Text("OK"),
+                          onPressed: () async {
+                            Navigator.of(context).pop(); // Dismiss the dialog
+                          }
+                      ),
+                    ]
+                ));
+              }
             }
           ),
           AboutListTile(
