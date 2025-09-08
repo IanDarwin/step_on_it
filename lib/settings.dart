@@ -34,6 +34,7 @@ class SettingsState extends State<SettingsPage> {
         children: <Widget>[
           SettingsGroup(title: "Fitness",
               children: [
+
                 SliderSettingsTile(
                   title: "Daily Steps Goal",
                   defaultValue: goal,
@@ -48,43 +49,38 @@ class SettingsState extends State<SettingsPage> {
                     await prefs.setDouble(Constants.KEY_GOAL_SETTING, value);
                   },
                 ),
+
               ],
           ),
           SettingsGroup(
             title: "App Customization",
             children: [
+
               DropDownSettingsTile<int>(
                 title: 'History to Keep & display',
-                selected: 0,
+                selected: 2,
                 settingKey: Constants.KEY_DUMMY,
                   values: {
                     0: "Don't save",
                     1: "1 day",
-                    2: "2",
-                    3: "3",
-                    4: "4",
-                    5: "5",
-                    6: "6",
-                    7: "7",
+                    2: "1 week",
+                    3: "1 month",
+                    4: "1 year",
+                    5: "Forever",
                 }
               ),
-              SwitchSettingsTile(
-                title: "Dark mode",
-                  leading: Icon(Icons.dark_mode),
-                  settingKey: Constants.KEY_DARK_MODE,
-                  onChange: (val) {
-                    print("Change will take effect on app restart");
-                  })
+
+              // SwitchSettingsTile(
+              //   title: "Dark mode",
+              //     leading: Icon(Icons.dark_mode),
+              //     settingKey: Constants.KEY_DARK_MODE,
+              //     onChange: (val) {
+              //       print("Change may take effect on app restart");
+              //     })
               ],
         )
       ]
     );
-  }
-
-  @override
-  void dispose() {
-	// Do we need anything here?
-	super.dispose();
   }
 }
 
