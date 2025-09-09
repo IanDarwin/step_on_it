@@ -16,4 +16,10 @@ Future main() async {
     Date d = Date.fromString('2028-12-29');
     expect(d, Date(2028, 12, 29));
   });
+
+  test('Test Date.fromString Feb 1', (){
+    Date d = Date(2028,1,1);
+    String s = d.toString();
+    expect(s, '2028-01-01');
+  });
 }

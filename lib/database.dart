@@ -1,16 +1,22 @@
 import 'dart:async';
 
-import 'package:flutter/widgets.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:step_on_it/datestuff.dart';
 
-class StepCountDb {
+class StepCountDB {
 
 	final tableName = 'stepcounts';
 
-	late Database database;
+	static late Database database;
 
+	Future<void> createTables() {
+		return database.execute(
+			'CREATE TABLE $tableName(id INTEGER PRIMARY KEY, date TEXT, count INTEGER)',
+		);
+	}
+
+	// Opens the database and calls createTables() on it.
 	void init() async {
 		// Open the database and store the reference.
 		database = await openDatabase(
@@ -18,48 +24,43 @@ class StepCountDb {
 		  // `path` package is best practice to ensure the path is correctly
 		  // constructed for each platform.
 		  join(await getDatabasesPath(), 'stepcounts.db'),
-		  onCreate: (db, version) {
-			return db.execute(
-			  'CREATE TABLE $tableName(id INTEGER PRIMARY KEY, date TEXT, count INTEGER)',
-			);
-		  },
 		  version: 1,
 		);
+		await createTables();
 	}
 
-	Future<DateCount> findByDate(String date) async {
-		final db = await database;
+	Future<DateCount> findByDate(Date date) async {
 
-		List<Map<String,String>> qr = await db.query(
+		var qr = await database.query(
 			tableName,
 			where: 'date = ?',
-			whereArgs: [date],
-		) as List<Map<String, String>>;
-		return DateCount.fromMap(qr[0]);
-	}
-
-	Future<void> setTodayCount(int count) async {
-		setCount(Date.today(), count);
+			whereArgs: [date.toString()],
+		);
+		return DateCount.fromMap(qr.first);
 	}
 
 	Future<void> setCount(date, count) async {
-		final db = await database;
 		DateCount savedCount = await findByDate(date);
 		if (count == null) {
-			await db.insert(
+			await database.insert(
 				tableName,
 				count.toMap(),
 				conflictAlgorithm: ConflictAlgorithm.replace,
 			);
 		} else {
-			await db.update(
-			tableName,
-			count.toMap(),
+			savedCount.count = count;
+			await database.update(
+				tableName,
+				savedCount.toMap(),
 		  );
 		}
 		}
 
-	Future<void> deleteCount(date) {
-		throw Exception("Not written yet");
-	}
+		Future<void> setTodayCount(int count) async {
+			setCount(Date.today(), count);
+		}
+
+		Future<void> deleteCount(date) {
+			throw Exception("Not written yet");
+		}
 }

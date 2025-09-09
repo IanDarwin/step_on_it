@@ -1,10 +1,7 @@
-import 'dart:async';
 
-import 'package:flutter/widgets.dart';
-import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:sprintf/sprintf.dart';
 
-// Track a date with its stepcount
+// Track a date with its step count
 class DateCount {
 	final Date date;
 	int count;
@@ -15,9 +12,9 @@ class DateCount {
 		return {'date': '$date', 'count': count};
 	}
 
-	DateCount.fromMap(Map<String, String?> map) :
-				this(date: Date.fromString(map['date']!),
-					count: int.parse(map['count']!));
+	DateCount.fromMap(Map<String, Object?> map) :
+				this(date: Date.fromString(map['date']! as String),
+					count: map['count']! as int);
 }
 
 // Mostly don't need the baggage of full DateTime class
@@ -29,9 +26,9 @@ class Date {
 	Date.today() :
 				this.fromDateTime(DateTime.now());
 	Date.fromString(String s) :
-				this(int.parse(s.substring(0,4)),
-					int.parse(s.substring(5,7)),
-					int.parse(s.substring(8,10))
+				this(int.parse((s).substring(0,4)),
+					int.parse((s).substring(5,7)),
+					int.parse(s.substring(8))
 			);
 
 	Map<String, Object?> toMap() {
@@ -40,8 +37,7 @@ class Date {
 
 	@override
 	String toString() {
-		String monthStr = month > 9?month.toString():"0${month.toString()}";
-		return "$year-$monthStr-$day";
+		return sprintf("%4d-%02d-%02d", [year, month, day]);
 	}
 
 	bool operator ==(Object other) {
