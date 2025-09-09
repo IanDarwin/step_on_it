@@ -39,6 +39,16 @@ class StepCountDB {
 		return DateCount.fromMap(qr.first);
 	}
 
+	Future<bool> existsForDate(Date date) async {
+		var qr = await database.query(
+			tableName,
+			where: 'date = ?',
+			whereArgs: [date.toString()],
+		);
+		// print("Query for date $date found ${qr.length} elements");
+		return qr.isNotEmpty;
+	}
+
 	Future<void> setCount(date, count) async {
 		DateCount savedCount = await findByDate(date);
 		if (count == null) {
