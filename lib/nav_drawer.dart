@@ -12,6 +12,9 @@ import 'constants.dart';
 const deviceDescription = "Mobile";
 
 class NavDrawer extends StatelessWidget {
+
+  const NavDrawer({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -39,7 +42,8 @@ class NavDrawer extends StatelessWidget {
                   MaterialPageRoute(
                       builder:  (context) => AlertDialog(
                           title: const Text("Privacy Policy"),
-                          content: const Text("We do not upload any data, at all, ever."),
+                          content: const Text("We do not upload any data, at all, ever.\n"
+                              "For more details: https://steponit.darwinsys.com/privacy.html"),
                           actions: <Widget> [
                             TextButton(
                                 child: Text("OK"),
