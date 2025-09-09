@@ -12,7 +12,7 @@ class StepCountDB {
 
 	Future<void> createTables() {
 		return database.execute(
-			'CREATE TABLE $tableName(id INTEGER PRIMARY KEY, date TEXT, count INTEGER)',
+			'CREATE TABLE $tableName(id INTEGER PRIMARY KEY, date TEXT, count INTEGER, goal INTEGER)',
 		);
 	}
 
