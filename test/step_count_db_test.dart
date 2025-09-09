@@ -20,7 +20,11 @@ void main() async {
 
     test('find by day test', () async {
       await StepCountDB.database.insert(db.tableName, {'date':  now.toString(), 'count': 42});
-      var datecountmap = await db.findByDate(now);
+      var dateCountFromDB = await db.findByDate(now);
+      expect(now.year, dateCountFromDB.date.year);
+      expect(now.month, dateCountFromDB.date.month);
+      expect(now.day, dateCountFromDB.date.day);
+      expect(42, dateCountFromDB.count);
     });
 
 
