@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:step_on_it/datestuff.dart';
+import 'package:step_on_it/date_count.dart';
 
 class StepCountDB {
 
-	final tableName = 'stepcounts';
+	final tableName = 'step_counts';
 
 	static late Database database;
 
@@ -23,7 +23,7 @@ class StepCountDB {
 		  // Set the path to the database. Note: Using the `join` function from the
 		  // `path` package is best practice to ensure the path is correctly
 		  // constructed for each platform.
-		  join(await getDatabasesPath(), 'stepcounts.db'),
+		  join(await getDatabasesPath(), 'step_counts.db'),
 		  version: 1,
 		);
 		await createTables();

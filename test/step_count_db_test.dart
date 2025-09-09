@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:step_on_it/database.dart';
-import 'package:step_on_it/datestuff.dart';
+import 'package:step_on_it/step_count_db.dart';
+import 'package:step_on_it/date_count.dart';
 
 void main() async {
 
