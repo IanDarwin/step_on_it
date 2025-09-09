@@ -18,13 +18,13 @@ class NavDrawer extends StatelessWidget {
       HtmlWidget("""
 <html lang="en">
 <h3>You're about to Step On It</h3>
-<p><b>Step On It</b> - The easy way to track your daily steps
+<p><b>Step On It</b> - The easy way to <em>get up to speed</em> tracking your daily steps
 as you work towards your exercise steps goal today!
 </p><p>
 This app is <em>soooo simple</em> we've not felt obliged to offer a training video!
 </p>
 <p>Built by Ian Darwin of Rejminet Group Inc.
-We can build all-platform apps for you too.
+We stand ready to build all-platform apps for you too.
 Contact ian@darwinsys.com.
 </p>
 <p>Version $version Build $buildNumber<br/>Running on $deviceDescription</p>
@@ -124,6 +124,12 @@ Contact ian@darwinsys.com.
                 ));
               }
             }
+          ),
+
+          ListTile(
+            leading: Icon(Icons.import_export),
+            title: Text('Export Data to File'),
+            onTap: null,
           ),
           AboutListTile(
             icon: const Icon(Icons.info),
