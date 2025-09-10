@@ -158,8 +158,6 @@ You can export the data; what you do with it then is not on us."""),
           _status = 'Permission Denied';
         });
       }
-
-
   }
 
   void _startMidnightTimer() {
@@ -177,15 +175,11 @@ You can export the data; what you do with it then is not on us."""),
   }
 
   void _resetAtMidnight() async {
-    // We can't rely on _totalSteps being updated at this exact moment,
-    // so we get the current total steps from the latest event.
-    // This is a robust approach for a midnight reset.
     setState(() {
       _stepsToday = 0; // Steps today should be zero at the moment of reset
     });
+    stepCountDB.setTodayCount(0);
     await prefs.setString('lastResetDate', DateTime.now().toIso8601String().substring(0, 10));
-
-    setState(() {}); // Force a rebuild to update the UI
   }
 
   @override
