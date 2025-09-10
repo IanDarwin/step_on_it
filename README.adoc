@@ -16,7 +16,8 @@ Step On It © 2025 by Ian Darwin, Rejminet Group Inc. is licensed under
 https://creativecommons.org/licenses/by-nc/4.0/[Creative Commons 
 Attribution-NonCommercial 4.0 International].
 
-Since parts were vibe-coded, society has already paid the price
+Although I wrote most of the code,
+a few parts were AI-coded, and society has already paid the price
 in terms of climate-damaging emissions from AI data centers,
 so this app and any derivatives will not,
 and can not legally (by its license), be monetized.

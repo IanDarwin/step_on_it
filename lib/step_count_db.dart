@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:step_on_it/date_count.dart';
+import 'package:step_on_it/main.dart';
 
 class StepCountDB {
 
@@ -12,12 +13,12 @@ class StepCountDB {
 
 	Future<void> createTables() {
 		return database.execute(
-			'CREATE TABLE $tableName(id INTEGER PRIMARY KEY, date TEXT, count INTEGER, goal INTEGER)',
+			'CREATE TABLE IF NOT EXISTS $tableName(id INTEGER PRIMARY KEY, date TEXT, count INTEGER, goal INTEGER)',
 		);
 	}
 
 	// Opens the database and calls createTables() on it.
-	void init() async {
+	Future<void> init() async {
 		// Open the database and store the reference.
 		database = await openDatabase(
 		  // Set the path to the database. Note: Using the `join` function from the
@@ -49,15 +50,20 @@ class StepCountDB {
 		return qr.isNotEmpty;
 	}
 
+	Future<void> save(DateCount dc) async {
+		await database.insert(tableName, dc.toMap());
+	}
+
 	Future<void> setCount(date, count) async {
-		DateCount savedCount = await findByDate(date);
-		if (count == null) {
+
+		if (!await stepCountDB.existsForDate(date)) {
 			await database.insert(
 				tableName,
 				count.toMap(),
 				conflictAlgorithm: ConflictAlgorithm.replace,
 			);
 		} else {
+			DateCount savedCount = await findByDate(date);
 			savedCount.count = count;
 			await database.update(
 				tableName,
