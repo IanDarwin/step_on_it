@@ -17,6 +17,10 @@ void main() async {
 
     Date now = Date.today();
 
+    setUp(() async {
+      await StepCountDB.database.execute("delete from ${db.tableName}");
+    })
+;
     test('find by day test', () async {
       await StepCountDB.database.insert(db.tableName, {'date':  now.toString(), 'count': 42});
       var dateCountFromDB = await db.findByDate(now);
@@ -25,6 +29,13 @@ void main() async {
       expect(now.day, dateCountFromDB.date.day);
       expect(42, dateCountFromDB.count);
     });
+
+  test('find all test', () async {
+    await StepCountDB.database.insert(db.tableName, {'date':  "2001-09-11", 'count': 42});
+    await StepCountDB.database.insert(db.tableName, {'date':  "2023-12-25", 'count': 45});
+    var dateCountsFromDB = await db.findAll();
+    expect(2, dateCountsFromDB.length);
+  });
 
   test("update date count", () async {
     Date then = Date(2028,11,07);
@@ -39,11 +50,17 @@ void main() async {
     expect(false, await db.existsForDate(Date.fromString("2014-06-10")));
   });
 
-  test('setCount where already exists', () async {
-    print("test not written yet!");
+  test('setCount with existing date should update', () async {
+    var date = Date.today();
+    await db.setCount(date, 42);
+    await db.setCount(date, 45);
+    var dateCountsFromDB = await db.findAll();
+    expect(1, dateCountsFromDB.length);
   });
 
   test('setCount where does not exist', () async {
-    print("test not written yet!");
+    await StepCountDB.database.insert(db.tableName, {'date':  "2012-07-07", 'count': 42});
+    var dateCountsFromDB = await db.findAll();
+    expect(1, dateCountsFromDB.length);
   });
 }

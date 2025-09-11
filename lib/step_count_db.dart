@@ -40,6 +40,17 @@ class StepCountDB {
 		return DateCount.fromMap(qr.first);
 	}
 
+	Future<List<DateCount>> findAll() async {
+		var qr = await database.query(
+			tableName,
+		);
+		List<DateCount> ret = [];
+		for (var rd in qr) {
+			ret.add(DateCount.fromMap(rd));
+		}
+		return ret;
+	}
+
 	Future<bool> existsForDate(Date date) async {
 		var qr = await database.query(
 			tableName,
@@ -54,12 +65,12 @@ class StepCountDB {
 		await database.insert(tableName, dc.toMap());
 	}
 
-	Future<void> setCount(date, count) async {
+	Future<void> setCount(Date date, int count) async {
 
 		if (!await stepCountDB.existsForDate(date)) {
 			await database.insert(
 				tableName,
-				count.toMap(),
+				{'date':date.toString(), 'count': count, 'goal': defaultGoal},
 				conflictAlgorithm: ConflictAlgorithm.replace,
 			);
 		} else {
@@ -68,6 +79,8 @@ class StepCountDB {
 			await database.update(
 				tableName,
 				savedCount.toMap(),
+				where: 'date = ?',
+				whereArgs: [date.toString()]
 		  );
 		}
 		}

@@ -17,7 +17,7 @@ class DateCount {
 	DateCount.fromMap(Map<String, Object?> map) :
 				this(date: Date.fromString(map['date']! as String),
 					count: map['count']! as int,
-					goal: map['goal']! as int);
+					goal: map['goal']!=null?map['goal'] as int:defaultGoal) ;
 
 	@override
   String toString() {
