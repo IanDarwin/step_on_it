@@ -59,7 +59,7 @@ class SettingsState extends State<SettingsPage> {
               DropDownSettingsTile<int>(
                 title: 'History to Keep & display',
                 selected: 2,
-                settingKey: Constants.KEY_DUMMY,
+                settingKey: Constants.KEY_HISTORY_DEPTH,
                   values: {
                     0: "Don't save",
                     1: "1 day",

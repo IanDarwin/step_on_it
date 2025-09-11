@@ -57,6 +57,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.2"
+  boot_time_plugin:
+    dependency: "direct main"
+    description:
+      name: boot_time_plugin
+      sha256: "4a93a055ff511fbf83855c20b9d76f19c9d7394d35de1228c04a7fd03922fa1b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   build:
     dependency: transitive
     description:

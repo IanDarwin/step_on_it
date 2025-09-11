@@ -1,3 +1,4 @@
+import 'package:boot_time_plugin/boot_time_plugin.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:material_charts/material_charts.dart';
@@ -138,6 +139,16 @@ class StepCounterPageState extends State<StepCounterPage> {
   }
 
   Future<void> initPlatformState() async {
+    int? previousBootTimeMillis = prefs.getInt(Constants.KEY_LAST_BOOT_TIME);
+    int bootTimeMillis = await BootTimePlugin.getBootTimeMilliseconds();
+    if (previousBootTimeMillis == null) {
+      // first run after app install!
+      print("first run after app install!");
+    }
+    if (previousBootTimeMillis != bootTimeMillis) {
+      // First run after device reboot - saved data may be wrong!
+      print("First run after device reboot");
+    }
     await _loadSavedData();
     double? savedGoal = prefs.getDouble(Constants.KEY_GOAL_SETTING);
     if (savedGoal != null) {
@@ -220,7 +231,7 @@ You can export the data; what you do with it then is not on us."""),
   Future<void> _loadSavedData() async {
     _stepsAtMidnight = prefs.getInt('stepsAtMidnight') ?? 0;
 
-    // Calculate _stepsToday from saved data to show the last known count,
+    // Calculate initial _stepsToday from saved data to show the last known count,
     // even though will be corrected by the first step event.
     int lastTotalSteps = prefs.getInt('lastTotalSteps') ?? 0;
     if (lastTotalSteps > _stepsAtMidnight) {
@@ -277,7 +288,8 @@ You can export the data; what you do with it then is not on us."""),
           ),
           drawer: NavDrawer(),
           body: Center(
-            child: Column(
+            child: SingleChildScrollView(
+              child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 MaterialChartHollowSemiCircle(
@@ -330,6 +342,7 @@ You can export the data; what you do with it then is not on us."""),
                 )
               ],
             ),
+          ),
           ),
         );
       });

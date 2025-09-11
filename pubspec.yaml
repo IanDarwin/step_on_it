@@ -9,6 +9,7 @@ environment:
   sdk: ^3.9.0
 
 dependencies:
+  boot_time_plugin: ^1.0.0
   flutter:
     sdk: flutter
   flutter_email_sender: ^7.0.0
