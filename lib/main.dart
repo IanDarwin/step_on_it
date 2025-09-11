@@ -84,7 +84,7 @@ class StepCounterPage extends StatefulWidget {
 class StepCounterPageState extends State<StepCounterPage> {
   late Stream<StepCount> _stepCountStream;
   late Stream<PedestrianStatus> _pedestrianStatusStream;
-  String _status = "Don't know yet";
+  String _status = "No steps yet";
   int _totalSteps = 0;
   int _stepsToday = 0;
   int _stepsAtMidnight = 0;
