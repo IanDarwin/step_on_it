@@ -7,6 +7,7 @@ import 'package:step_on_it/main.dart' show version, buildNumber;
 import 'package:step_on_it/settings.dart';
 
 import 'constants.dart';
+import 'import_export.dart';
 
 // TEMPORARY
 const deviceDescription = "Mobile";
@@ -111,7 +112,10 @@ class NavDrawer extends StatelessWidget {
           ListTile(
             leading: Icon(Icons.import_export),
             title: Text('Export Data to File'),
-            onTap: null,
+            onTap: () {
+              Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => (const ImportExportPage())));
+            },
           ),
           AboutListTile(
             icon: const Icon(Icons.info),

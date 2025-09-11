@@ -14,6 +14,10 @@ class DateCount {
 		return {'date': '$date', 'count': count, 'goal': goal};
 	}
 
+	String toJSON() {
+		return "{'date': '$date', 'count': $count, 'goal': $goal}";
+	}
+
 	DateCount.fromMap(Map<String, Object?> map) :
 				this(date: Date.fromString(map['date']! as String),
 					count: map['count']! as int,

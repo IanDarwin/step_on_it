@@ -25,4 +25,10 @@ Future main() async {
     expect(200, dateCount.count);
     expect(10000, dateCount.goal);
   });
+
+  test('Test toJSON', () {
+    var dc = DateCount.fromString('2034-06-10 200 2500');
+    var json = dc.toJSON();
+    expect("XXX", json);
+  });
 }
