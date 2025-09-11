@@ -21,6 +21,27 @@ late int buildNumber;
 const defaultGoal = 10000;
 StepCountDB stepCountDB = StepCountDB();
 
+/// Step On It - a basic step-counting app
+///
+/// Step Counting sounds simple, but isn't. The app can be killed anytime
+/// and restarted many steps later, so you have to handle that. As well,
+/// the underlying OS step-counter increments from zero after each reboot,
+/// so first time after a reboot, you have to behave specially.
+///
+/// We handle application restart by caching steps in the shared prefs.
+/// we don't yet correctly handle in-day device restart - major XXX!
+///
+/// The main data items are:
+///  _totalSteps - from the OS counter, set in onStep
+///  current goal - set in "GoalModel"
+///
+/// The SharedPreferences singleton is used to store and retrieve 3 values:
+///  stepsAtMidnight - the value of _totalSteps as of 00:00:01 this morning
+///  lastTotalSteps - what it says, but should be eliminated?
+///  stepsAtMidnight - ditto?
+///
+/// The StepCountDB is write-only for now; to be used for graphing and exporting.
+///
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   prefs = await SharedPreferences.getInstance();
@@ -87,14 +108,12 @@ class StepCounterPageState extends State<StepCounterPage> {
       _firstStepEventReceived = true;
       _checkAndResetDailySteps(event.steps);
     }
-    var stepCount = await stepCountDB.findByDate(Date.today());
-    var newCount = stepCount.count+1;
-    stepCountDB.setTodayCount(newCount);
     _totalSteps = event.steps;
     _stepsToday = _totalSteps - _stepsAtMidnight;
-    _saveData();
+    print("_stepsToday $_stepsToday");
+    await _saveData();
     setState(() {
-      _stepsToday = newCount;
+      // update ui
     });
   }
 
@@ -193,18 +212,16 @@ You can export the data; what you do with it then is not on us."""),
     // This is a robust approach for a midnight reset.
     _stepsAtMidnight = _totalSteps;
     setState(() {
-      _stepsToday = 0; // Steps today should be zero at the moment of reset
+      _stepsToday = 0; // Start over!
     });
-    _saveData();
-    stepCountDB.setTodayCount(0);
-    await prefs.setString('lastResetDate', DateTime.now().toIso8601String().substring(0, 10));
+    await _saveData();
   }
 
   Future<void> _loadSavedData() async {
     _stepsAtMidnight = prefs.getInt('stepsAtMidnight') ?? 0;
 
-    // We can calculate _stepsToday from saved data to show the last known count,
-    // but this will be corrected by the first step event.
+    // Calculate _stepsToday from saved data to show the last known count,
+    // even though will be corrected by the first step event.
     int lastTotalSteps = prefs.getInt('lastTotalSteps') ?? 0;
     if (lastTotalSteps > _stepsAtMidnight) {
       setState(() {
@@ -217,38 +234,29 @@ You can export the data; what you do with it then is not on us."""),
     await prefs.setInt('stepsAtMidnight', _stepsAtMidnight);
     await prefs.setString('lastResetDate', DateTime.now().toIso8601String().substring(0, 10));
     await prefs.setInt('lastTotalSteps', _totalSteps);
+    stepCountDB.setTodayCount(_stepsToday);
   }
 
   void _checkAndResetDailySteps(int currentTotalSteps) async {
     final now = DateTime.now();
     final lastResetDateString = prefs.getString('lastResetDate');
     final lastResetDate = lastResetDateString != null ? DateTime.parse(lastResetDateString) : null;
-
     if (lastResetDate == null ||
         now.day != lastResetDate.day ||
         now.month != lastResetDate.month ||
         now.year != lastResetDate.year) {
-      // The `_resetSteps` function is now called with the first valid total steps value.
-      _resetSteps(currentTotalSteps);
+      _stepsAtMidnight = currentTotalSteps;
+      setState(() {
+         _stepsToday = 0; // Steps today should be zero at the moment of reset
+      });
+      await _saveData();
     } else {
        // If it's the same day, update _stepsAtMidnight to the loaded value.
        _stepsAtMidnight = prefs.getInt('stepsAtMidnight') ?? 0;
     }
   }
 
-  void _resetSteps(int currentTotalSteps) async {
-    // Set the new baseline for the day.
-    _stepsAtMidnight = currentTotalSteps;
-    await _saveData();
-
-    // Recalculate daily steps after the reset
-     setState(() {
-       _stepsToday = 0; // Steps today should be zero at the moment of reset
-     });
-    stepCountDB.setTodayCount(0);
-    await prefs.setString('lastResetDate', DateTime.now().toIso8601String().substring(0, 10));
-   }
-
+  // Last but not least, the all-important widget build method!
   @override
   Widget build(BuildContext context) {
     return Consumer<GoalModel>(
