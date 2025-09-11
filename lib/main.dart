@@ -63,7 +63,10 @@ class StepCounterPageState extends State<StepCounterPage> {
   late Stream<StepCount> _stepCountStream;
   late Stream<PedestrianStatus> _pedestrianStatusStream;
   String _status = "Don't know yet";
+  int _totalSteps = 0;
   int _stepsToday = 0;
+  int _stepsAtMidnight = 0;
+  bool _firstStepEventReceived = false;
   Timer? _timer;
 
   @override
@@ -79,16 +82,24 @@ class StepCounterPageState extends State<StepCounterPage> {
   }
 
   void onStepCount(StepCount event) async {
+    print("step");
+    if (!_firstStepEventReceived) {
+      _firstStepEventReceived = true;
+      _checkAndResetDailySteps(event.steps);
+    }
     var stepCount = await stepCountDB.findByDate(Date.today());
     var newCount = stepCount.count+1;
     stepCountDB.setTodayCount(newCount);
-    
+    _totalSteps = event.steps;
+    _stepsToday = _totalSteps - _stepsAtMidnight;
+    _saveData();
     setState(() {
       _stepsToday = newCount;
     });
   }
 
   void onPedestrianStatusChanged(PedestrianStatus event) {
+    print("ped stat change");
     setState(() {
       _status = event.status;
     });
@@ -102,18 +113,20 @@ class StepCounterPageState extends State<StepCounterPage> {
 
   void onStepCountError(error) {
     setState(() {
+      _totalSteps = 0;
       _stepsToday = 0;
     });
   }
 
   Future<void> initPlatformState() async {
+    await _loadSavedData();
     double? savedGoal = prefs.getDouble(Constants.KEY_GOAL_SETTING);
     if (savedGoal != null) {
       var goalModel = Provider.of<GoalModel>(context, listen:false);
       goalModel.setGoal(savedGoal);
     }
     if (!await stepCountDB.existsForDate(Date.today())) {
-      var dc = DateCount(date: Date.today(), count:0, goal: savedGoal != null ? savedGoal as int : defaultGoal);
+      var dc = DateCount(date: Date.today(), count:0, goal: savedGoal != null ? savedGoal.round() : defaultGoal);
       stepCountDB.save(dc);
     }
     if (!await Permission.activityRecognition.isGranted) {
@@ -175,12 +188,66 @@ You can export the data; what you do with it then is not on us."""),
   }
 
   void _resetAtMidnight() async {
+    // We can't rely on _totalSteps being updated at this exact moment,
+    // so we get the current total steps from the latest event.
+    // This is a robust approach for a midnight reset.
+    _stepsAtMidnight = _totalSteps;
     setState(() {
       _stepsToday = 0; // Steps today should be zero at the moment of reset
     });
+    _saveData();
     stepCountDB.setTodayCount(0);
     await prefs.setString('lastResetDate', DateTime.now().toIso8601String().substring(0, 10));
   }
+
+  Future<void> _loadSavedData() async {
+    _stepsAtMidnight = prefs.getInt('stepsAtMidnight') ?? 0;
+
+    // We can calculate _stepsToday from saved data to show the last known count,
+    // but this will be corrected by the first step event.
+    int lastTotalSteps = prefs.getInt('lastTotalSteps') ?? 0;
+    if (lastTotalSteps > _stepsAtMidnight) {
+      setState(() {
+        _stepsToday = lastTotalSteps - _stepsAtMidnight;
+      });
+    }
+  }
+
+  Future<void> _saveData() async {
+    await prefs.setInt('stepsAtMidnight', _stepsAtMidnight);
+    await prefs.setString('lastResetDate', DateTime.now().toIso8601String().substring(0, 10));
+    await prefs.setInt('lastTotalSteps', _totalSteps);
+  }
+
+  void _checkAndResetDailySteps(int currentTotalSteps) async {
+    final now = DateTime.now();
+    final lastResetDateString = prefs.getString('lastResetDate');
+    final lastResetDate = lastResetDateString != null ? DateTime.parse(lastResetDateString) : null;
+
+    if (lastResetDate == null ||
+        now.day != lastResetDate.day ||
+        now.month != lastResetDate.month ||
+        now.year != lastResetDate.year) {
+      // The `_resetSteps` function is now called with the first valid total steps value.
+      _resetSteps(currentTotalSteps);
+    } else {
+       // If it's the same day, update _stepsAtMidnight to the loaded value.
+       _stepsAtMidnight = prefs.getInt('stepsAtMidnight') ?? 0;
+    }
+  }
+
+  void _resetSteps(int currentTotalSteps) async {
+    // Set the new baseline for the day.
+    _stepsAtMidnight = currentTotalSteps;
+    await _saveData();
+
+    // Recalculate daily steps after the reset
+     setState(() {
+       _stepsToday = 0; // Steps today should be zero at the moment of reset
+     });
+    stepCountDB.setTodayCount(0);
+    await prefs.setString('lastResetDate', DateTime.now().toIso8601String().substring(0, 10));
+   }
 
   @override
   Widget build(BuildContext context) {
