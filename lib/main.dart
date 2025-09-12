@@ -19,6 +19,7 @@ import 'date_count.dart';
 late SharedPreferences prefs;
 late String version;
 late int buildNumber;
+int rebootFactor = 0;
 const defaultGoal = 10000;
 StepCountDB stepCountDB = StepCountDB();
 
@@ -38,8 +39,9 @@ StepCountDB stepCountDB = StepCountDB();
 ///
 /// The SharedPreferences singleton is used to store and retrieve 3 values:
 ///  stepsAtMidnight - the value of _totalSteps as of 00:00:01 this morning
-///  lastTotalSteps - what it says, but should be eliminated?
-///  stepsAtMidnight - ditto?
+///  _totalSteps - what it says
+///  stepsAtMidnight - ditto
+///  rebootFactor - for use only after in-day reboot
 ///
 /// The StepCountDB is write-only for now; to be used for graphing and exporting.
 ///
@@ -110,7 +112,7 @@ class StepCounterPageState extends State<StepCounterPage> {
       _checkAndResetDailySteps(event.steps);
     }
     _totalSteps = event.steps;
-    _stepsToday = _totalSteps - _stepsAtMidnight;
+    _stepsToday = _totalSteps - _stepsAtMidnight + rebootFactor;
     print("_stepsToday $_stepsToday");
     await _saveData();
     setState(() {
@@ -145,20 +147,39 @@ class StepCounterPageState extends State<StepCounterPage> {
       // first run after app install!
       print("first run after app install!");
     }
+    prefs.setInt(Constants.KEY_LAST_BOOT_TIME, bootTimeMillis);
+    _stepsAtMidnight = prefs.getInt('stepsAtMidnight') ?? 0;
+    _totalSteps = prefs.getInt('lastTotalSteps') ?? 0;
+    bool newDay = !await stepCountDB.existsForDate(Date.today());
     if (previousBootTimeMillis != bootTimeMillis) {
       // First run after device reboot - saved data may be wrong!
-      print("First run after device reboot");
+      // if (!newDay) {
+      //   rebootFactor = -_totalSteps;
+      // }
+      print("First run after device reboot; rebootFactor = $rebootFactor");
     }
-    await _loadSavedData();
+
     double? savedGoal = prefs.getDouble(Constants.KEY_GOAL_SETTING);
+    if (newDay) {
+      // First run on today's date
+      var dc = DateCount(date: Date.today(), count:0, goal: savedGoal != null ? savedGoal.round() : defaultGoal);
+      stepCountDB.save(dc);
+      // invalidate caches
+      _stepsAtMidnight = 0;
+      _totalSteps = 0;
+    }
+      // Calculate initial _stepsToday from saved data to show the last known count,
+      // even though this will be corrected by the first step event.
+      if (_totalSteps >= _stepsAtMidnight) {
+          // This MUST agree with the line in onStep()
+          _stepsToday = _totalSteps - _stepsAtMidnight + rebootFactor;
+      }
+
     if (savedGoal != null) {
       var goalModel = Provider.of<GoalModel>(context, listen:false);
       goalModel.setGoal(savedGoal);
     }
-    if (!await stepCountDB.existsForDate(Date.today())) {
-      var dc = DateCount(date: Date.today(), count:0, goal: savedGoal != null ? savedGoal.round() : defaultGoal);
-      stepCountDB.save(dc);
-    }
+
     if (!await Permission.activityRecognition.isGranted) {
       if (!mounted) {
         return;
@@ -175,9 +196,8 @@ That's the point of this app, after all!
 
 We need physical activity sensor permission to count your steps.
 
-We never ever upload any data, anywhere.
-
-You can export the data; what you do with it then is not on us."""),
+We never ever upload any data, anywhere. You can export the data; 
+what you do with it then is up to you."""),
                       actions: <Widget>[
                         TextButton(
                             child: Text("OK"),
@@ -196,11 +216,15 @@ You can export the data; what you do with it then is not on us."""),
         _stepCountStream = Pedometer.stepCountStream;
         _stepCountStream.listen(onStepCount).onError(onStepCountError);
         _startMidnightTimer(); // Start the timer after everything is initialized
+        setState(() {
+          // update display
+        });
       } else {
         setState(() {
           _status = 'Permission Denied';
         });
       }
+      await _saveData();
   }
 
   void _startMidnightTimer() {
@@ -228,28 +252,15 @@ You can export the data; what you do with it then is not on us."""),
     await _saveData();
   }
 
-  Future<void> _loadSavedData() async {
-    _stepsAtMidnight = prefs.getInt('stepsAtMidnight') ?? 0;
-
-    // Calculate initial _stepsToday from saved data to show the last known count,
-    // even though will be corrected by the first step event.
-    int lastTotalSteps = prefs.getInt('lastTotalSteps') ?? 0;
-    if (lastTotalSteps > _stepsAtMidnight) {
-      setState(() {
-        _stepsToday = lastTotalSteps - _stepsAtMidnight;
-      });
-    }
-  }
-
   Future<void> _saveData() async {
     await prefs.setInt('stepsAtMidnight', _stepsAtMidnight);
-    await prefs.setString('lastResetDate', DateTime.now().toIso8601String().substring(0, 10));
+    await prefs.setString('lastResetDate', Date.today().toString());
     await prefs.setInt('lastTotalSteps', _totalSteps);
     stepCountDB.setTodayCount(_stepsToday);
   }
 
   void _checkAndResetDailySteps(int currentTotalSteps) async {
-    final now = DateTime.now();
+    final now = Date.today();
     final lastResetDateString = prefs.getString('lastResetDate');
     final lastResetDate = lastResetDateString != null ? DateTime.parse(lastResetDateString) : null;
     if (lastResetDate == null ||
@@ -274,11 +285,14 @@ You can export the data; what you do with it then is not on us."""),
       builder: (context, goalModel, child) {
         double percentage = 100 * _stepsToday.toDouble() / goalModel.goal;
         if (percentage > 100) {
-          debugPrint("OOPS: Percentage high: $percentage");
-          percentage = 100;
+          // Wahoo! They got more steps than original goal.
+          // Should set to percentage and bump max - later XXX
+          // Should be a confetti animation here XXX
+          goalModel.setGoal(goalModel.goal * 1.5);
+          percentage = 100 * _stepsToday.toDouble() / goalModel.goal;
         }
         if (percentage < 0) {
-          debugPrint("OOPS: Percentage low: $percentage");
+          debugPrint("OOPS: % is $percentage, clipping to zero");
           percentage = 0;
         }
         var currentGoal = goalModel.goal; // Get the current goal from the provider
