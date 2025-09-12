@@ -109,7 +109,7 @@ class StepCounterPageState extends State<StepCounterPage> {
   }
 
   void onStepCount(StepCount event) async {
-    print("step");
+    debugPrint("step");
     if (!_firstStepEventReceived) {
       _firstStepEventReceived = true;
       _checkAndResetDailySteps(event.steps);
@@ -151,8 +151,8 @@ class StepCounterPageState extends State<StepCounterPage> {
       print("first run after app install!");
     }
     prefs.setInt(Constants.KEY_LAST_BOOT_TIME, bootTimeMillis);
-    _stepsAtMidnight = prefs.getInt('stepsAtMidnight') ?? 0;
-    _totalSteps = prefs.getInt('lastTotalSteps') ?? 0;
+    _stepsAtMidnight = prefs.getInt(Constants.keyStepsAtMidnight) ?? 0;
+    _totalSteps = prefs.getInt(Constants.keyLastResetDate) ?? 0;
     bool newDay = !await stepCountDB.existsForDate(Date.today());
     if (previousBootTimeMillis != bootTimeMillis) {
       // First run after device reboot - saved data may be wrong!
@@ -171,12 +171,13 @@ class StepCounterPageState extends State<StepCounterPage> {
       _stepsAtMidnight = 0;
       _totalSteps = 0;
     }
-      // Calculate initial _stepsToday from saved data to show the last known count,
-      // even though this will be corrected by the first step event.
-      if (_totalSteps >= _stepsAtMidnight) {
-          // This MUST agree with the line in onStep()
-          _stepsToday = _totalSteps - _stepsAtMidnight + rebootFactor;
-      }
+
+    // Calculate initial _stepsToday from saved data to show the last known count,
+    // even though this will be corrected by the first step event.
+    if (_totalSteps >= _stepsAtMidnight) {
+      // This MUST agree with the line in onStep()
+      _stepsToday = _totalSteps - _stepsAtMidnight + rebootFactor;
+    }
 
     if (savedGoal != null) {
       var goalModel = Provider.of<GoalModel>(context, listen:false);
@@ -249,6 +250,7 @@ what you do with it then is up to you."""),
     // so we get the current total steps from the latest event.
     // Seems a robust approach for a midnight reset.
     _stepsAtMidnight = _totalSteps;
+    rebootFactor = 0;
     setState(() {
       _stepsToday = 0; // Start over!
     });
@@ -256,15 +258,15 @@ what you do with it then is up to you."""),
   }
 
   Future<void> _saveData() async {
-    await prefs.setInt('stepsAtMidnight', _stepsAtMidnight);
-    await prefs.setString('lastResetDate', Date.today().toString());
-    await prefs.setInt('lastTotalSteps', _totalSteps);
+    await prefs.setInt(Constants.keyStepsAtMidnight, _stepsAtMidnight);
+    await prefs.setString(Constants.keyLastResetDate, Date.today().toString());
+    await prefs.setInt(Constants.keyLastTotalSteps, _totalSteps);
     stepCountDB.setTodayCount(_stepsToday);
   }
 
   void _checkAndResetDailySteps(int currentTotalSteps) async {
     final now = Date.today();
-    final lastResetDateString = prefs.getString('lastResetDate');
+    final lastResetDateString = prefs.getString(Constants.keyLastResetDate);
     final lastResetDate = lastResetDateString != null ? DateTime.parse(lastResetDateString) : null;
     if (lastResetDate == null ||
         now.day != lastResetDate.day ||
@@ -277,7 +279,7 @@ what you do with it then is up to you."""),
       await _saveData();
     } else {
        // If it's the same day, update _stepsAtMidnight to the loaded value.
-       _stepsAtMidnight = prefs.getInt('stepsAtMidnight') ?? 0;
+       _stepsAtMidnight = prefs.getInt(Constants.keyStepsAtMidnight) ?? 0;
     }
   }
 

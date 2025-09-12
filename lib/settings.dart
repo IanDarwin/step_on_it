@@ -48,7 +48,6 @@ class SettingsState extends State<SettingsPage> {
                     goalModel.setGoal(value);
                   },
                 ),
-
               ],
           ),
           SettingsGroup(
