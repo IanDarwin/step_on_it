@@ -116,10 +116,10 @@ class StepCounterPageState extends State<StepCounterPage> {
     }
     _totalSteps = event.steps;
     _stepsToday = _totalSteps - _stepsAtMidnight + rebootFactor;
-    print("_stepsToday $_stepsToday");
+    debugPrint("_stepsToday $_stepsToday");
     await _saveData();
     setState(() {
-      // update ui
+      // update UI
     });
   }
 
@@ -245,9 +245,9 @@ what you do with it then is up to you."""),
   }
 
   void _resetAtMidnight() async {
-    // We can't rely on _totalSteps being updated at this exact moment,
+    // Can't rely on _totalSteps being updated at precisely midnight,
     // so we get the current total steps from the latest event.
-    // This is a robust approach for a midnight reset.
+    // Seems a robust approach for a midnight reset.
     _stepsAtMidnight = _totalSteps;
     setState(() {
       _stepsToday = 0; // Start over!
