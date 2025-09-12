@@ -39,11 +39,14 @@ StepCountDB stepCountDB = StepCountDB();
 ///
 /// The SharedPreferences singleton is used to store and retrieve 3 values:
 ///  stepsAtMidnight - the value of _totalSteps as of 00:00:01 this morning
-///  _totalSteps - what it says
+///  _totalSteps - latest reading from the OS
 ///  stepsAtMidnight - ditto
 ///  rebootFactor - for use only after in-day reboot
 ///
 /// The StepCountDB is write-only for now; to be used for graphing and exporting.
+///
+/// Most important methods to read: main, initPlatformState, onStepCount,
+/// resetAtMidnight, checkAndResetDailySteps, and of course build().
 ///
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
