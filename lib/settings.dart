@@ -46,7 +46,6 @@ class SettingsState extends State<SettingsPage> {
                   subtitleTextStyle: TextStyle(fontSize: 16),
                   onChange: (double value) async {
                     goalModel.setGoal(value);
-                    await prefs.setDouble(Constants.KEY_GOAL_SETTING, value);
                   },
                 ),
 
