@@ -35,8 +35,8 @@ class DebugState extends State<DebugPanel> {
                   Text("Debug: ${Constants.debug}"),
                   Text("RunType: $runType"),
                   Text("TotalSteps from OS: $totalSteps"),
-                  Text("Steps today: $stepsToday"),
                   Text("Steps at midnight: $stepsAtMidnight"),
+                  Text("Steps today: $stepsToday"),
                   Text("RebootFactor: $rebootFactor"),
                   // Get goal
                   // Get rebootFactor
