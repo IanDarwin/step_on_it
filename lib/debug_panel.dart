@@ -34,7 +34,7 @@ class DebugState extends State<DebugPanel> {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                   Text("Debug: ${Constants.debug}"),
                   Text("RunType: $runType"),
-                  Text("TotalSteps: $totalSteps"),
+                  Text("TotalSteps from OS: $totalSteps"),
                   Text("Steps today: $stepsToday"),
                   Text("Steps at midnight: $stepsAtMidnight"),
                   Text("RebootFactor: $rebootFactor"),
