@@ -64,6 +64,15 @@ void main() async {
   );
 }
 
+enum RunType {
+  firstRunAfterInstall,
+  firstRunAfterReboot,
+  firstRunOfDay,
+  subsequentRunSameDay,
+  unknown
+}
+RunType runType = RunType.unknown;
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -86,13 +95,14 @@ class StepCounterPage extends StatefulWidget {
   StepCounterPageState createState() => StepCounterPageState();
 }
 
+int totalSteps = 0;
+int stepsToday = 0;
+int stepsAtMidnight = 0;
+
 class StepCounterPageState extends State<StepCounterPage> {
   late Stream<StepCount> _stepCountStream;
   late Stream<PedestrianStatus> _pedestrianStatusStream;
   String _status = "No steps yet";
-  int _totalSteps = 0;
-  int _stepsToday = 0;
-  int _stepsAtMidnight = 0;
   bool _firstStepEventReceived = false;
   Timer? _timer;
 
@@ -114,9 +124,9 @@ class StepCounterPageState extends State<StepCounterPage> {
       _firstStepEventReceived = true;
       _checkAndResetDailySteps(event.steps);
     }
-    _totalSteps = event.steps;
-    _stepsToday = _totalSteps - _stepsAtMidnight + rebootFactor;
-    debugPrint("_stepsToday $_stepsToday");
+    totalSteps = event.steps;
+    stepsToday = totalSteps - stepsAtMidnight + rebootFactor;
+    debugPrint("_stepsToday $stepsToday");
     await _saveData();
     setState(() {
       // update UI
@@ -138,45 +148,52 @@ class StepCounterPageState extends State<StepCounterPage> {
 
   void onStepCountError(error) {
     setState(() {
-      _totalSteps = 0;
-      _stepsToday = 0;
+      totalSteps = 0;
+      stepsToday = 0;
     });
   }
 
   Future<void> initPlatformState() async {
     int? previousBootTimeMillis = prefs.getInt(Constants.KEY_LAST_BOOT_TIME);
     int bootTimeMillis = await BootTimePlugin.getBootTimeMilliseconds();
+    prefs.setInt(Constants.KEY_LAST_BOOT_TIME, bootTimeMillis);
+
+    stepsAtMidnight = prefs.getInt(Constants.keyStepsAtMidnight) ?? 0;
+    totalSteps = prefs.getInt(Constants.keyLastTotalSteps) ?? 0;
+    bool newDay = !await stepCountDB.existsForDate(Date.today());
+
     if (previousBootTimeMillis == null) {
       // first run after app install!
-      print("first run after app install!");
+      runType = RunType.firstRunAfterInstall;
+      await prefs.setInt(Constants.KEY_LAST_BOOT_TIME, bootTimeMillis);
+    } else if (newDay) {
+      if (previousBootTimeMillis != bootTimeMillis) {
+        //rebootFactor = -_stepsAtMidnight;
+        runType = RunType.firstRunAfterReboot;
+        debugPrint("First run after device reboot; rebootFactor = $rebootFactor");
+      } else {
+        runType = RunType.firstRunOfDay;
+      }
+    } else {
+      runType = RunType.subsequentRunSameDay;
     }
-    prefs.setInt(Constants.KEY_LAST_BOOT_TIME, bootTimeMillis);
-    _stepsAtMidnight = prefs.getInt(Constants.keyStepsAtMidnight) ?? 0;
-    _totalSteps = prefs.getInt(Constants.keyLastResetDate) ?? 0;
-    bool newDay = !await stepCountDB.existsForDate(Date.today());
-    if (previousBootTimeMillis != bootTimeMillis) {
-      // First run after device reboot - saved data may be wrong!
-      // if (!newDay) {
-      //   rebootFactor = -_totalSteps;
-      // }
-      print("First run after device reboot; rebootFactor = $rebootFactor");
-    }
+    debugPrint("RunType: $runtimeType");
 
     double? savedGoal = prefs.getDouble(Constants.KEY_GOAL_SETTING);
     if (newDay) {
       // First run on today's date
       var dc = DateCount(date: Date.today(), count:0, goal: savedGoal != null ? savedGoal.round() : defaultGoal);
       stepCountDB.save(dc);
-      // invalidate caches
-      _stepsAtMidnight = 0;
-      _totalSteps = 0;
+      // reset/invalidate caches
+      stepsAtMidnight = totalSteps;
+      totalSteps = 0;
     }
 
     // Calculate initial _stepsToday from saved data to show the last known count,
     // even though this will be corrected by the first step event.
-    if (_totalSteps >= _stepsAtMidnight) {
+    if (totalSteps >= stepsAtMidnight) {
       // This MUST agree with the line in onStep()
-      _stepsToday = _totalSteps - _stepsAtMidnight + rebootFactor;
+      stepsToday = totalSteps - stepsAtMidnight + rebootFactor;
     }
 
     if (savedGoal != null) {
@@ -223,6 +240,7 @@ what you do with it then is up to you."""),
         setState(() {
           // update display
         });
+        debugPrint("Initialization completed normally");
       } else {
         setState(() {
           _status = 'Permission Denied';
@@ -249,19 +267,19 @@ what you do with it then is up to you."""),
     // Can't rely on _totalSteps being updated at precisely midnight,
     // so we get the current total steps from the latest event.
     // Seems a robust approach for a midnight reset.
-    _stepsAtMidnight = _totalSteps;
+    stepsAtMidnight = totalSteps;
     rebootFactor = 0;
     setState(() {
-      _stepsToday = 0; // Start over!
+      stepsToday = 0; // Start over!
     });
     await _saveData();
   }
 
   Future<void> _saveData() async {
-    await prefs.setInt(Constants.keyStepsAtMidnight, _stepsAtMidnight);
+    await prefs.setInt(Constants.keyStepsAtMidnight, stepsAtMidnight);
     await prefs.setString(Constants.keyLastResetDate, Date.today().toString());
-    await prefs.setInt(Constants.keyLastTotalSteps, _totalSteps);
-    stepCountDB.setTodayCount(_stepsToday);
+    await prefs.setInt(Constants.keyLastTotalSteps, totalSteps);
+    stepCountDB.setTodayCount(stepsToday);
   }
 
   void _checkAndResetDailySteps(int currentTotalSteps) async {
@@ -272,14 +290,14 @@ what you do with it then is up to you."""),
         now.day != lastResetDate.day ||
         now.month != lastResetDate.month ||
         now.year != lastResetDate.year) {
-      _stepsAtMidnight = currentTotalSteps;
+      stepsAtMidnight = currentTotalSteps;
       setState(() {
-         _stepsToday = 0; // Steps today should be zero at the moment of reset
+         stepsToday = 0; // Steps today should be zero at the moment of reset
       });
       await _saveData();
     } else {
        // If it's the same day, update _stepsAtMidnight to the loaded value.
-       _stepsAtMidnight = prefs.getInt(Constants.keyStepsAtMidnight) ?? 0;
+       stepsAtMidnight = prefs.getInt(Constants.keyStepsAtMidnight) ?? 0;
     }
   }
 
@@ -288,13 +306,17 @@ what you do with it then is up to you."""),
   Widget build(BuildContext context) {
     return Consumer<GoalModel>(
       builder: (context, goalModel, child) {
-        double percentage = 100 * _stepsToday.toDouble() / goalModel.goal;
+        double percentage = 100 * stepsToday.toDouble() / goalModel.goal;
+        //
+        // Clamp values to reasonable.
         if (percentage > 100) {
           // Wahoo! They got more steps than original goal.
           // Should set to percentage and bump max - later XXX
           // Should be a confetti animation here XXX
-          goalModel.setGoal(goalModel.goal * 1.5);
-          percentage = 100 * _stepsToday.toDouble() / goalModel.goal;
+          // XXX Need to keep 'chosendGoal' and updatedGoal separate??
+          // goalModel.setGoal(goalModel.goal * 1.5);
+          // percentage = 100 * _stepsToday.toDouble() / goalModel.goal;
+          percentage = 100;
         }
         if (percentage < 0) {
           debugPrint("OOPS: % is $percentage, clipping to zero");
@@ -331,7 +353,7 @@ what you do with it then is up to you."""),
                       color: Colors.grey[600],
                     ),
                     legendFormatter: (label, percentage) =>
-                      "${label=='Active'?_stepsToday.round():(currentGoal-_stepsToday).round()} of ${currentGoal.round()}",
+                      "${label=='Active'?stepsToday.round():(currentGoal-stepsToday).round()} of ${currentGoal.round()}",
                   ),
                 ),
                 const Divider(

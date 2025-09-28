@@ -63,12 +63,14 @@ class Date {
 		return sprintf("%4d-%02d-%02d", [year, month, day]);
 	}
 
-	bool operator ==(Object other) {
+	@override
+  bool operator ==(Object other) {
 		return other is Date
 				&& year == other.year
 				&& month == other.month
 				&& day == other.day;
 	}
-	int get hashCode => Object.hash(year, month, day);
+	@override
+  int get hashCode => Object.hash(year, month, day);
 }
 
