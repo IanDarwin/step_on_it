@@ -111,12 +111,6 @@ class StepCounterPageState extends State<StepCounterPage> {
     initPlatformState();
   }
 
-  @override
-  void dispose() { 
-    _timer?.cancel();
-    super.dispose();
-  }
-
   void onStepCount(StepCount event) async {
     if (!_firstStepEventReceived) {
     _firstStepEventReceived = true;
@@ -187,6 +181,11 @@ class StepCounterPageState extends State<StepCounterPage> {
       runType = RunType.subsequentRunSameDay;
     }
     debugPrint("RunType: $runtimeType");
+
+    // For mid-day app restarts on the same day, ensure we haven't crossed midnight
+    if (!newDay) {
+      _ensureResetForNewDay(totalSteps);
+    }
 
     double? savedGoal = prefs.getDouble(Constants.KEY_GOAL_SETTING);
 
