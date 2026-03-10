@@ -162,9 +162,17 @@ class StepCounterPageState extends State<StepCounterPage> {
   }
 
   void onPedestrianStatusChanged(PedestrianStatus event) {
-    print("ped stat changeL event.status");
+    print("ped stat changeL ${event.status}");
     setState(() {
-      _status = Status.valueOf(event.status);
+      var myStatus = null;
+      for (Status s in Status.values) {
+        if (s.name.toLowerCase() == event.status)
+          myStatus = s;
+      }
+      if (myStatus == null) {
+        myStatus = Status.Error;
+      }
+      _status = myStatus;
     });
   }
 
@@ -374,7 +382,7 @@ what you do with it then is up to you."""),
                 ),
                 Center(
                   child: Text(
-                    _status.toString()[0].toUpperCase() + _status.toString().substring(1),
+                    _status.name[0].toUpperCase() + _status.name.substring(1),
                     style: _status != Status.Error
                         ? const TextStyle(fontSize: 30, color: Colors.green)
                         : const TextStyle(fontSize: 20, color: Colors.red),
