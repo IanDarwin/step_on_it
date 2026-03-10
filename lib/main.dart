@@ -252,7 +252,7 @@ what you do with it then is up to you."""),
     await prefs.setInt(Constants.keyStepsAtMidnight, stepsAtMidnight);
     await prefs.setString(Constants.keyLastResetDate, Date.today().toString());
     await prefs.setInt(Constants.keyLastTotalSteps, totalSteps);
-    stepCountDB.setTodayCount(stepsToday);
+    await stepCountDB.setTodayCount(stepsToday);
   }
 
   void _checkAndResetDailySteps(int currentTotalSteps) async {
