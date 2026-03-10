@@ -73,6 +73,13 @@ enum RunType {
 }
 RunType runType = RunType.unknown;
 
+enum Status {
+	Starting,
+	Walking,
+	Stopped,
+	Error,
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -102,7 +109,7 @@ int stepsAtMidnight = 0;
 class StepCounterPageState extends State<StepCounterPage> {
   late Stream<StepCount> _stepCountStream;
   late Stream<PedestrianStatus> _pedestrianStatusStream;
-  String _status = "No steps yet";
+  Status _status = Status.Starting;
   bool _firstStepEventReceived = false;
 
   @override
@@ -155,15 +162,15 @@ class StepCounterPageState extends State<StepCounterPage> {
   }
 
   void onPedestrianStatusChanged(PedestrianStatus event) {
-    print("ped stat change");
+    print("ped stat changeL event.status");
     setState(() {
-      _status = event.status;
+      _status = Status.valueOf(event.status);
     });
   }
 
   void onPedestrianStatusError(error) {
     setState(() {
-      _status = 'Pedestrian Status not available';
+      _status = Status.Error;
     });
   }
 
@@ -259,8 +266,9 @@ what you do with it then is up to you."""),
         });
         debugPrint("Initialization completed normally");
       } else {
+		print("Permission denied!");
         setState(() {
-          _status = 'Permission Denied';
+          _status = Status.Error;
         });
       }
       await _saveData();
@@ -357,17 +365,17 @@ what you do with it then is up to you."""),
                   style: TextStyle(fontSize: 30),
                 ),
                 Icon(
-                  _status == 'walking'
+                  _status == Status.Walking
                       ? Icons.directions_walk
-                      : _status == 'stopped'
+                      : _status == Status.Starting || _status == Status.Stopped
                           ? Icons.accessibility_new
                           : Icons.error,
                   size: 100,
                 ),
                 Center(
                   child: Text(
-                    _status[0].toUpperCase() + _status.substring(1),
-                    style: _status == 'walking' || _status == 'stopped'
+                    _status.toString()[0].toUpperCase() + _status.toString().substring(1),
+                    style: _status != Status.Error
                         ? const TextStyle(fontSize: 30, color: Colors.green)
                         : const TextStyle(fontSize: 20, color: Colors.red),
                   ),
