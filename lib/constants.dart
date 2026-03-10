@@ -19,5 +19,5 @@ class Constants {
   // Miscellaneous keys
   static String get ISSUES_EMAIL => "step_on_it@darwinsys.com";
 
-
+  static final bool debug = true;
 }
