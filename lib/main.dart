@@ -126,13 +126,31 @@ class StepCounterPageState extends State<StepCounterPage> {
   void _ensureResetForNewDay(int currentTotalSteps) async {
     final today = Date.today();
     final lastResetDateString = prefs.getString(Constants.keyLastResetDate);
-    if (lastResetDateString == null || DateTime.parse(lastResetDateString).toString() != today.toString()) {
-    stepsAtMidnight = currentTotalSteps;
-    rebootFactor = 0;
-    setState(() {
-      stepsToday = 0;
-    });
-    await _saveData();
+    
+    // Only reset if we have no saved date OR if the saved date is from a different day
+    if (lastResetDateString == null) {
+      // First ever run
+      stepsAtMidnight = currentTotalSteps;
+      rebootFactor = 0;
+      setState(() {
+        stepsToday = 0;
+      });
+      await _saveData();
+    } else {
+      // We have a saved date - parse it and compare just the date portion
+      final lastResetDate = DateTime.parse(lastResetDateString);
+      if (lastResetDate.year != today.year || 
+          lastResetDate.month != today.month || 
+          lastResetDate.day != today.day) {
+        // It's a new day
+        stepsAtMidnight = currentTotalSteps;
+        rebootFactor = 0;
+        setState(() {
+          stepsToday = 0;
+        });
+        await _saveData();
+      }
+      // If same day, do nothing - keep the saved stepsAtMidnight
     }
   }
 
