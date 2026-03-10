@@ -94,7 +94,6 @@ class StepCounterPageState extends State<StepCounterPage> {
   int _stepsToday = 0;
   int _stepsAtMidnight = 0;
   bool _firstStepEventReceived = false;
-  Timer? _timer;
 
   @override
   void initState() {
@@ -109,18 +108,27 @@ class StepCounterPageState extends State<StepCounterPage> {
   }
 
   void onStepCount(StepCount event) async {
-    debugPrint("step");
     if (!_firstStepEventReceived) {
-      _firstStepEventReceived = true;
-      _checkAndResetDailySteps(event.steps);
+    _firstStepEventReceived = true;
+    _ensureResetForNewDay(event.steps);
     }
-    _totalSteps = event.steps;
-    _stepsToday = _totalSteps - _stepsAtMidnight + rebootFactor;
-    debugPrint("_stepsToday $_stepsToday");
+    totalSteps = event.steps;
+    stepsToday = totalSteps - stepsAtMidnight + rebootFactor;
     await _saveData();
+    setState(() {});
+  }
+
+  void _ensureResetForNewDay(int currentTotalSteps) async {
+    final today = Date.today();
+    final lastResetDateString = prefs.getString(Constants.keyLastResetDate);
+    if (lastResetDateString == null || DateTime.parse(lastResetDateString).toString() != today.toString()) {
+    stepsAtMidnight = currentTotalSteps;
+    rebootFactor = 0;
     setState(() {
-      // update UI
+      stepsToday = 0;
     });
+    await _saveData();
+    }
   }
 
   void onPedestrianStatusChanged(PedestrianStatus event) {
@@ -163,14 +171,6 @@ class StepCounterPageState extends State<StepCounterPage> {
     }
 
     double? savedGoal = prefs.getDouble(Constants.KEY_GOAL_SETTING);
-    if (newDay) {
-      // First run on today's date
-      var dc = DateCount(date: Date.today(), count:0, goal: savedGoal != null ? savedGoal.round() : defaultGoal);
-      stepCountDB.save(dc);
-      // invalidate caches
-      _stepsAtMidnight = 0;
-      _totalSteps = 0;
-    }
 
     // Calculate initial _stepsToday from saved data to show the last known count,
     // even though this will be corrected by the first step event.
@@ -219,7 +219,6 @@ what you do with it then is up to you."""),
 
         _stepCountStream = Pedometer.stepCountStream;
         _stepCountStream.listen(onStepCount).onError(onStepCountError);
-        _startMidnightTimer(); // Start the timer after everything is initialized
         setState(() {
           // update display
         });
@@ -229,32 +228,6 @@ what you do with it then is up to you."""),
         });
       }
       await _saveData();
-  }
-
-  void _startMidnightTimer() {
-    final now = DateTime.now();
-    final nextMidnight = DateTime(now.year, now.month, now.day + 1);
-    final duration = nextMidnight.difference(now);
-
-    _timer = Timer(duration, () {
-      _resetAtMidnight();
-      // Set a new timer for the next midnight
-      _timer = Timer.periodic(const Duration(days: 1), (timer) {
-        _resetAtMidnight();
-      });
-    });
-  }
-
-  void _resetAtMidnight() async {
-    // Can't rely on _totalSteps being updated at precisely midnight,
-    // so we get the current total steps from the latest event.
-    // Seems a robust approach for a midnight reset.
-    _stepsAtMidnight = _totalSteps;
-    rebootFactor = 0;
-    setState(() {
-      _stepsToday = 0; // Start over!
-    });
-    await _saveData();
   }
 
   Future<void> _saveData() async {
