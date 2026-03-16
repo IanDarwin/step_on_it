@@ -46,7 +46,7 @@ StepCountDB stepCountDB = StepCountDB();
 /// The StepCountDB is write-only for now; to be used for graphing and exporting.
 ///
 /// Most important methods to read: main, initPlatformState, onStepCount,
-/// resetAtMidnight, checkAndResetDailySteps, and of course build().
+/// stepsAtMidnight, saveData, and of course build().
 ///
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -86,7 +86,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Step Counter',
+      title: 'StepOnIt Step Counter',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -118,16 +118,112 @@ class StepCounterPageState extends State<StepCounterPage> {
     initPlatformState();
   }
 
+  Future<void> initPlatformState() async {
+    int? previousBootTimeMillis = prefs.getInt(Constants.KEY_LAST_BOOT_TIME);
+    int bootTimeMillis = await BootTimePlugin.getBootTimeMilliseconds();
+    await prefs.setInt(Constants.KEY_LAST_BOOT_TIME, bootTimeMillis);
+
+    stepsAtMidnight = prefs.getInt(Constants.keyStepsAtMidnight) ?? 0;
+    if (stepsAtMidnight == 0) {
+      stepsAtMidnight = 12345;
+    }
+    totalSteps = prefs.getInt(Constants.keyLastTotalSteps) ?? 0;
+    bool newDay = !await stepCountDB.existsForDate(Date.today());
+
+    if (previousBootTimeMillis == null) {
+      // first run after app install!
+      runType = RunType.firstRunAfterInstall;
+    } else if (newDay) {
+      if (previousBootTimeMillis != bootTimeMillis) {
+        rebootFactor = -stepsAtMidnight;
+        runType = RunType.firstRunAfterReboot;
+        debugPrint("First run after device reboot; rebootFactor = $rebootFactor");
+      } else {
+        runType = RunType.firstRunOfDay;
+      }
+    } else {
+      runType = RunType.subsequentRunSameDay;
+    }
+    debugPrint("RunType: $runType");
+
+    // For mid-day app restarts on the same day, ensure we haven't crossed midnight
+    if (!newDay) {
+      _ensureResetForNewDay(totalSteps);
+    }
+
+    double? savedGoal = prefs.getDouble(Constants.KEY_GOAL_SETTING);
+
+    // Calculate initial _stepsToday from saved data to show the last known count,
+    // even though this will be corrected by the first step event.
+    if (totalSteps >= stepsAtMidnight) {
+      // This MUST agree with the line in onStep()
+      stepsToday = totalSteps - stepsAtMidnight + rebootFactor;
+    }
+
+    if (savedGoal != null) {
+      var goalModel = Provider.of<GoalModel>(context, listen:false);
+      goalModel.setGoal(savedGoal);
+    }
+
+    if (!await Permission.activityRecognition.isGranted) {
+      // if (!mounted) {
+      //   return;
+      // }
+      await Navigator.push(context,
+          MaterialPageRoute(
+              builder: (context) =>
+                  AlertDialog(
+                      title: const Text("Permission Request"),
+                      content: const Text("""
+Step On It saves your personal step count, only on your device.
+That's the point of this app, after all!
+
+We need physical activity sensor permission to count your steps.
+
+We never ever upload any data, anywhere. You can export the data; 
+what you do with it then is up to you."""),
+                      actions: <Widget>[
+                        TextButton(
+                            child: Text("OK"),
+                            onPressed: () async {
+                              Navigator.of(context).pop(); // Alert
+                            }
+                        )
+                      ])));
+    }
+    if ((await Permission.activityRecognition.request()).isGranted) {
+      _pedestrianStatusStream = Pedometer.pedestrianStatusStream;
+      _pedestrianStatusStream
+          .listen(onPedestrianStatusChanged)
+          .onError(onPedestrianStatusError);
+
+      _stepCountStream = Pedometer.stepCountStream;
+      _stepCountStream.listen(onStepCount).onError(onStepCountError);
+      setState(() {
+        // just update display
+      });
+      debugPrint("Initialization completed normally");
+    } else {
+      debugPrint("Permission denied!");
+      setState(() {
+        _status = Status.Error;
+      });
+    }
+    await _saveData();
+    debugPrint("end of initState: runType $runType, newday = $newDay, steps=$stepsToday");
+  }
+
+
   void onStepCount(StepCount event) async {
     if (!_firstStepEventReceived) {
-    _firstStepEventReceived = true;
-    _ensureResetForNewDay(event.steps);
+      _firstStepEventReceived = true;
+      _ensureResetForNewDay(stepsAtMidnight = event.steps);
     }
     totalSteps = event.steps;
     stepsToday = totalSteps - stepsAtMidnight + rebootFactor;
-    debugPrint("_stepsToday $stepsToday");
-    await _saveData();
+    // debugPrint("_stepsToday $stepsToday");
     setState(() {});
+    await _saveData();
   }
 
   void _ensureResetForNewDay(int currentTotalSteps) async {
@@ -161,127 +257,6 @@ class StepCounterPageState extends State<StepCounterPage> {
     }
   }
 
-  void onPedestrianStatusChanged(PedestrianStatus event) {
-    print("ped stat changeL ${event.status}");
-    setState(() {
-      var myStatus = null;
-      for (Status s in Status.values) {
-        if (s.name.toLowerCase() == event.status)
-          myStatus = s;
-      }
-      if (myStatus == null) {
-        myStatus = Status.Error;
-      }
-      _status = myStatus;
-    });
-  }
-
-  void onPedestrianStatusError(error) {
-    setState(() {
-      _status = Status.Error;
-    });
-  }
-
-  void onStepCountError(error) {
-    setState(() {
-      totalSteps = 0;
-      stepsToday = 0;
-    });
-  }
-
-  Future<void> initPlatformState() async {
-    int? previousBootTimeMillis = prefs.getInt(Constants.KEY_LAST_BOOT_TIME);
-    int bootTimeMillis = await BootTimePlugin.getBootTimeMilliseconds();
-    prefs.setInt(Constants.KEY_LAST_BOOT_TIME, bootTimeMillis);
-
-    stepsAtMidnight = prefs.getInt(Constants.keyStepsAtMidnight) ?? 0;
-    totalSteps = prefs.getInt(Constants.keyLastTotalSteps) ?? 0;
-    bool newDay = !await stepCountDB.existsForDate(Date.today());
-
-    if (previousBootTimeMillis == null) {
-      // first run after app install!
-      runType = RunType.firstRunAfterInstall;
-      await prefs.setInt(Constants.KEY_LAST_BOOT_TIME, bootTimeMillis);
-    } else if (newDay) {
-      if (previousBootTimeMillis != bootTimeMillis) {
-        //rebootFactor = -_stepsAtMidnight;
-        runType = RunType.firstRunAfterReboot;
-        debugPrint("First run after device reboot; rebootFactor = $rebootFactor");
-      } else {
-        runType = RunType.firstRunOfDay;
-      }
-    } else {
-      runType = RunType.subsequentRunSameDay;
-    }
-    debugPrint("RunType: $runtimeType");
-
-    // For mid-day app restarts on the same day, ensure we haven't crossed midnight
-    if (!newDay) {
-      _ensureResetForNewDay(totalSteps);
-    }
-
-    double? savedGoal = prefs.getDouble(Constants.KEY_GOAL_SETTING);
-
-    // Calculate initial _stepsToday from saved data to show the last known count,
-    // even though this will be corrected by the first step event.
-    if (totalSteps >= stepsAtMidnight) {
-      // This MUST agree with the line in onStep()
-      stepsToday = totalSteps - stepsAtMidnight + rebootFactor;
-    }
-
-    if (savedGoal != null) {
-      var goalModel = Provider.of<GoalModel>(context, listen:false);
-      goalModel.setGoal(savedGoal);
-    }
-
-    if (!await Permission.activityRecognition.isGranted) {
-      if (!mounted) {
-        return;
-      }
-      await Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) =>
-                  AlertDialog(
-                      title: const Text("Permission Request"),
-                      content: const Text("""
-Step On It saves your personal step count, only on your device.
-That's the point of this app, after all!
-
-We need physical activity sensor permission to count your steps.
-
-We never ever upload any data, anywhere. You can export the data; 
-what you do with it then is up to you."""),
-                      actions: <Widget>[
-                        TextButton(
-                            child: Text("OK"),
-                            onPressed: () async {
-                              Navigator.of(context).pop(); // Alert
-                            }
-                        )
-                      ])));
-     }
-      if ((await Permission.activityRecognition.request()).isGranted) {
-        _pedestrianStatusStream = Pedometer.pedestrianStatusStream;
-        _pedestrianStatusStream
-            .listen(onPedestrianStatusChanged)
-            .onError(onPedestrianStatusError);
-
-        _stepCountStream = Pedometer.stepCountStream;
-        _stepCountStream.listen(onStepCount).onError(onStepCountError);
-        setState(() {
-          // update display
-        });
-        debugPrint("Initialization completed normally");
-      } else {
-		print("Permission denied!");
-        setState(() {
-          _status = Status.Error;
-        });
-      }
-      await _saveData();
-  }
-
   Future<void> _saveData() async {
     await prefs.setInt(Constants.keyStepsAtMidnight, stepsAtMidnight);
     await prefs.setString(Constants.keyLastResetDate, Date.today().toString());
@@ -289,23 +264,31 @@ what you do with it then is up to you."""),
     await stepCountDB.setTodayCount(stepsToday);
   }
 
-  void _checkAndResetDailySteps(int currentTotalSteps) async {
-    final now = Date.today();
-    final lastResetDateString = prefs.getString(Constants.keyLastResetDate);
-    final lastResetDate = lastResetDateString != null ? DateTime.parse(lastResetDateString) : null;
-    if (lastResetDate == null ||
-        now.day != lastResetDate.day ||
-        now.month != lastResetDate.month ||
-        now.year != lastResetDate.year) {
-      stepsAtMidnight = currentTotalSteps;
-      setState(() {
-         stepsToday = 0; // Steps today should be zero at the moment of reset
-      });
-      await _saveData();
-    } else {
-       // If it's the same day, update _stepsAtMidnight to the loaded value.
-       stepsAtMidnight = prefs.getInt(Constants.keyStepsAtMidnight) ?? 0;
-    }
+  void onPedestrianStatusChanged(PedestrianStatus event) {
+    debugPrint("ped stat changeL ${event.status}");
+    setState(() {
+      Status? myStatus;
+      for (Status s in Status.values) {
+        if (s.name.toLowerCase() == event.status) {
+          myStatus = s;
+        }
+      }
+      myStatus ??= Status.Error;
+      _status = myStatus;
+    });
+  }
+
+  void onPedestrianStatusError(dynamic error) {
+    setState(() {
+      _status = Status.Error;
+    });
+  }
+
+  void onStepCountError(dynamic error) {
+    setState(() {
+      totalSteps = 0;
+      stepsToday = 0;
+    });
   }
 
   // Last but not least, the all-important widget build method!
